@@ -1,0 +1,198 @@
+{
+  "app": "BLIP Quiet Console",
+  "captured": "2026-10-31",
+  "screens": [
+    {
+      "file": "screens/ui-empty.png",
+      "group": "Chat",
+      "label": "Welcome",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-chat.png",
+      "group": "Chat",
+      "label": "Populated transcript",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-chat-live.png",
+      "group": "Chat",
+      "label": "Streaming, queue and attachment",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-chat-tool-open.png",
+      "group": "Chat",
+      "label": "Tool output expanded",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-chat-approval.png",
+      "group": "Chat",
+      "label": "Approval gate",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-search.png",
+      "group": "Chat",
+      "label": "Sidebar message search",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-chat-dark.png",
+      "group": "Chat",
+      "label": "Dark mode",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-goals.png",
+      "group": "Workspace",
+      "label": "Goals",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-goal-detail.png",
+      "group": "Workspace",
+      "label": "Goal detail",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-automations.png",
+      "group": "Workspace",
+      "label": "Automations",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-automation-detail.png",
+      "group": "Workspace",
+      "label": "Automation detail",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-files.png",
+      "group": "Workspace",
+      "label": "Files",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-artifacts.png",
+      "group": "Workspace",
+      "label": "Artifacts",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-connections.png",
+      "group": "Workspace",
+      "label": "Connections",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-connections-bottom.png",
+      "group": "Workspace",
+      "label": "Connections: MCP and Google setup",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-tools.png",
+      "group": "Workspace",
+      "label": "Capabilities",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-settings.png",
+      "group": "Workspace",
+      "label": "Settings",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-settings-bottom.png",
+      "group": "Workspace",
+      "label": "Settings: memory and skills",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-dark-goals.png",
+      "group": "Workspace",
+      "label": "Goals, dark mode",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-dialog-goal.png",
+      "group": "Overlays",
+      "label": "New goal dialog",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-dialog-provider.png",
+      "group": "Overlays",
+      "label": "Add provider dialog",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-delete-all-dialog.png",
+      "group": "Overlays",
+      "label": "Delete all chats confirmation",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-after-delete.png",
+      "group": "Overlays",
+      "label": "Empty after cleanup",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-mascot-card.png",
+      "group": "Overlays",
+      "label": "Mascot card",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-mascot-hi.png",
+      "group": "Overlays",
+      "label": "Mascot card: greeting",
+      "viewport": "1440x1000"
+    },
+    {
+      "file": "screens/ui-mobile-chat.png",
+      "group": "Phone",
+      "label": "Chat",
+      "viewport": "390x844"
+    },
+    {
+      "file": "screens/ui-mobile-drawer.png",
+      "group": "Phone",
+      "label": "Sidebar drawer",
+      "viewport": "390x844"
+    },
+    {
+      "file": "screens/ui-mobile-goals.png",
+      "group": "Phone",
+      "label": "Goals",
+      "viewport": "390x844"
+    },
+    {
+      "file": "screens/ui-mobile-empty.png",
+      "group": "Phone",
+      "label": "Welcome",
+      "viewport": "390x844"
+    },
+    {
+      "file": "screens/ui-mobile-approval.png",
+      "group": "Phone",
+      "label": "Approval gate",
+      "viewport": "390x844"
+    },
+    {
+      "file": "screens/ui-mobile-mascot.png",
+      "group": "Phone",
+      "label": "Mascot card",
+      "viewport": "390x844"
+    }
+  ],
+  "mascot": {
+    "states": 20,
+    "keyframes": 80,
+    "lab": "mascot-animation-lab.html",
+    "sheet": "mascot-keyframes.png"
+  }
+}

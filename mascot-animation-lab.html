@@ -1,0 +1,2216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>BLIP mascot motion lab</title>
+<meta name="description" content="Twenty BLIP mascot states animated by one parameter renderer, with a live frame meter and loop seam inspection.">
+<style>
+  :root{
+    --paper:#FCFCFC;
+    --white:#FFFFFF;
+    --ink:#000000;
+    --ink-80:rgba(0,0,0,.8);
+    --ink-64:rgba(0,0,0,.64);
+    --ink-52:rgba(0,0,0,.52);
+    --ink-40:rgba(0,0,0,.4);
+    --ink-28:rgba(0,0,0,.28);
+    --ink-16:rgba(0,0,0,.16);
+    --ink-10:rgba(0,0,0,.1);
+    --ink-06:rgba(0,0,0,.06);
+    --ink-04:rgba(0,0,0,.04);
+    --line:rgba(0,0,0,.14);
+    --line-soft:rgba(0,0,0,.08);
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --r:14px;
+    --pad:clamp(16px,2.4vw,34px);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:14px;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+  button,input{font:inherit;color:inherit}
+  button{cursor:pointer}
+  h1,h2,p,dl,dd,dt{margin:0}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .page{
+    max-width:1480px;
+    margin:0 auto;
+    padding:0 var(--pad) 40px;
+  }
+  :focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .kicker{
+    font-family:var(--mono);
+    font-size:10px;
+    line-height:1;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-52);
+  }
+
+  /* ---------------------------------------------------------------- header */
+  .masthead{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:32px;
+    padding:30px 0 24px;
+    border-bottom:1px solid var(--line);
+  }
+  .brandline{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .mark{width:20px;height:20px;border-radius:50%;background:var(--ink);position:relative;flex:0 0 auto}
+  .mark::before,.mark::after{content:"";position:absolute;top:6px;width:3px;height:8px;border-radius:3px;background:var(--white)}
+  .mark::before{left:6px}
+  .mark::after{right:6px}
+  .brandline b{font-family:var(--mono);font-size:11px;letter-spacing:.18em;font-weight:500}
+  h1{
+    font-size:clamp(38px,4.4vw,62px);
+    line-height:.94;
+    letter-spacing:-.045em;
+    font-weight:600;
+    max-width:18ch;
+  }
+  .lede{
+    margin-top:14px;
+    max-width:52ch;
+    font-size:14px;
+    color:var(--ink-64);
+    text-wrap:pretty;
+  }
+  .specs{
+    display:flex;
+    gap:26px;
+    flex:0 0 auto;
+    padding-bottom:4px;
+  }
+  .specs div{display:grid;gap:4px}
+  .specs dt{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-40)}
+  .specs dd{font-family:var(--mono);font-size:12px;letter-spacing:-.02em}
+  .specs dd b{font-size:22px;font-weight:500;letter-spacing:-.04em}
+
+  /* ------------------------------------------------------------------ hero */
+  .hero{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(320px,386px);
+    gap:clamp(14px,2vw,26px);
+    align-items:start;
+    padding:24px 0 8px;
+  }
+  .stage-col{min-width:0}
+  .stage{
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    background:var(--paper);
+  }
+  .stage-view{position:relative;background:var(--paper)}
+  #stage{
+    display:block;
+    width:100%;
+    height:clamp(286px,50vh,500px);
+  }
+  .stage-top{
+    position:absolute;
+    top:13px;
+    left:15px;
+    right:15px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    pointer-events:none;
+  }
+  .stage-index{font-size:10px;letter-spacing:.1em;color:var(--ink-40)}
+  .tag{
+    font-family:var(--mono);
+    font-size:9px;
+    line-height:1;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    padding:5px 8px 4px;
+    border:1px solid var(--ink-28);
+    border-radius:999px;
+    color:var(--ink-64);
+    background:var(--paper);
+  }
+  .tag[data-kind="cut"],.tag[data-kind="snap"]{background:var(--ink);border-color:var(--ink);color:var(--white)}
+  .stage-caption{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:18px;
+    padding:13px 16px 14px;
+    border-top:1px solid var(--line);
+  }
+  .stage-caption h2{font-size:20px;line-height:1.15;font-weight:600;letter-spacing:-.025em}
+  .stage-caption p{font-size:12px;color:var(--ink-52);margin-top:2px}
+  .stage-time{flex:0 0 auto;font-size:11px;color:var(--ink-64);padding-bottom:2px}
+  .stage-time b{font-weight:500;color:var(--ink)}
+
+  .transport{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:10px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    min-height:38px;
+    padding:0 14px;
+    border:1px solid var(--ink-28);
+    border-radius:9px;
+    background:var(--paper);
+    color:var(--ink);
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:-.01em;
+    white-space:nowrap;
+    transition:background .12s ease,border-color .12s ease;
+  }
+  .btn:hover{background:var(--ink-04);border-color:var(--ink-52)}
+  .btn:active{background:var(--ink-06)}
+  .btn-primary{background:var(--ink);border-color:var(--ink);color:var(--white);min-width:102px}
+  .btn-primary:hover{background:var(--ink);border-color:var(--ink);opacity:.88}
+  .btn-icon{width:38px;padding:0;font-family:var(--mono);font-size:15px}
+  .btn-small{min-height:32px;padding:0 11px;font-size:11px}
+  .icon{display:inline-flex;width:11px;height:11px}
+  .icon svg{display:block;width:11px;height:11px}
+  .scrub{flex:1 1 160px;display:flex;align-items:center;min-width:120px;height:38px;padding:0 4px}
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:22px;
+    margin:0;
+    background:transparent;
+    cursor:ew-resize;
+  }
+  input[type="range"]::-webkit-slider-runnable-track{height:3px;border-radius:3px;background:var(--ink-16)}
+  input[type="range"]::-moz-range-track{height:3px;border-radius:3px;background:var(--ink-16)}
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:14px;height:14px;margin-top:-5.5px;
+    border-radius:50%;
+    background:var(--ink);
+    border:2px solid var(--paper);
+    box-shadow:0 0 0 1px var(--ink);
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:10px;height:10px;border-radius:50%;background:var(--ink);border:2px solid var(--paper);box-shadow:0 0 0 1px var(--ink)
+  }
+  input[type="range"]:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .hint{margin-top:8px;font-size:9.5px;letter-spacing:.04em;color:var(--ink-40);text-transform:uppercase}
+
+  /* ----------------------------------------------------------------- panel */
+  .panel{
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:var(--white);
+    padding:12px 12px 14px;
+    min-width:0;
+  }
+  .panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    font-size:9px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--ink-40);
+    padding-bottom:8px;
+  }
+  .panel-head + *{margin-top:0}
+  .picker{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:2px;
+    margin:0 -4px;
+  }
+  .pick{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-width:0;
+    padding:4px 7px;
+    border:0;
+    border-radius:6px;
+    background:transparent;
+    text-align:left;
+    font-size:11px;
+    line-height:1.2;
+    letter-spacing:-.01em;
+    color:var(--ink-80);
+  }
+  .pick:hover{background:var(--ink-04)}
+  .pick .n{font-family:var(--mono);font-size:9px;color:var(--ink-40);width:14px;flex:0 0 auto}
+  .pick .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pick[aria-pressed="true"]{background:var(--ink);color:var(--white)}
+  .pick[aria-pressed="true"] .n{color:rgba(255,255,255,.6)}
+
+  .meter-head{margin-top:12px;border-top:1px solid var(--line-soft);padding-top:11px}
+  .meter{display:flex;align-items:flex-end;gap:16px;padding:2px 0 10px}
+  .fps{display:flex;align-items:baseline;gap:5px;flex:0 0 auto}
+  .fps b{font-family:var(--mono);font-size:44px;line-height:.86;font-weight:500;letter-spacing:-.055em}
+  .fps span{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-52)}
+  .meter-rows{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:0 12px;min-width:0}
+  .meter-rows div{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:6px;
+    padding:3px 0;
+    border-bottom:1px solid var(--line-soft);
+    font-size:10px;
+  }
+  .meter-rows span{color:var(--ink-52);white-space:nowrap}
+  .meter-rows b{font-family:var(--mono);font-size:10px;font-weight:500;white-space:nowrap}
+  .graph-wrap{position:relative;border:1px solid var(--line-soft);border-radius:9px;background:var(--white);overflow:hidden}
+  #graph{display:block;width:100%;height:88px}
+  .legend{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:7px;
+    font-size:9px;
+    letter-spacing:.02em;
+    color:var(--ink-52);
+    flex-wrap:wrap;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+  .key{display:inline-block;width:12px;height:0;border-top:2px solid var(--ink);transform:translateY(-1px)}
+  .key-limit{display:inline-block;width:12px;height:0;border-top:1px dashed var(--ink-40);transform:translateY(-1px)}
+  .legend .over{margin-left:auto;font-family:var(--mono)}
+
+  .rules{margin-top:13px;border-top:1px solid var(--line-soft);padding-top:11px;display:grid;gap:6px}
+  .rules div{display:grid;grid-template-columns:18px 1fr;gap:8px}
+  .rules .n{font-family:var(--mono);font-size:9px;color:var(--ink-40);padding-top:2px}
+  .rules p{font-size:11px;line-height:1.4;color:var(--ink-64)}
+
+  /* --------------------------------------------------------------- banner */
+  .banner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-top:14px;
+    padding:11px 13px;
+    border-radius:10px;
+    background:var(--ink);
+    color:var(--white);
+    font-size:12px;
+  }
+  .banner[hidden]{display:none}
+  .banner p{text-wrap:pretty}
+  .banner .btn{background:transparent;border-color:rgba(255,255,255,.55);color:var(--white);min-height:30px}
+  .banner .btn:hover{background:rgba(255,255,255,.12);border-color:var(--white)}
+
+  /* ---------------------------------------------------------------- sheet */
+  .sheet{margin-top:36px;border-top:1px solid var(--line);padding-top:24px}
+  .sheet-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:24px;
+    margin-bottom:22px;
+  }
+  .sheet-head h2{font-size:clamp(24px,2.4vw,32px);line-height:1.05;letter-spacing:-.035em;font-weight:600;margin-top:7px}
+  .sheet-head p{max-width:44ch;font-size:12px;color:var(--ink-52);text-align:right}
+  .group-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:0 0 7px;
+    margin:0 0 10px;
+    border-bottom:1px solid var(--line-soft);
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-40);
+  }
+  .group-head + .grid{margin-bottom:26px}
+  .grid{
+    contain:layout;
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+  }
+  .card{
+    position:relative;
+    display:block;
+    width:100%;
+    padding:0;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:var(--paper);
+    color:var(--ink);
+    text-align:left;
+    overflow:hidden;
+    contain:layout paint;
+    transition:border-color .14s ease;
+  }
+  .card:hover{border-color:var(--ink-40)}
+  .card[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+  .card canvas,.card-canvas{display:block;width:100%;aspect-ratio:1.3;background:var(--paper)}
+  .card-num{
+    position:absolute;
+    top:9px;
+    left:11px;
+    font-size:9px;
+    letter-spacing:.1em;
+    color:var(--ink-40);
+    pointer-events:none;
+  }
+  .card-dot{
+    position:absolute;
+    top:11px;
+    right:11px;
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--ink);
+    opacity:0;
+    transform:scale(.6);
+    transition:opacity .14s ease,transform .14s ease;
+  }
+  .card[aria-pressed="true"] .card-dot{opacity:1;transform:none}
+  .card-copy{display:block;padding:9px 12px 13px}
+  .card-copy b{display:block;font-size:13px;font-weight:500;letter-spacing:-.015em;line-height:1.2}
+  .card-copy small{display:block;margin-top:2px;font-size:11px;line-height:1.35;color:var(--ink-52)}
+  .card-copy .card-dur{display:block;margin-top:7px;font-size:9px;letter-spacing:.04em;color:var(--ink-40)}
+
+  footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-top:32px;
+    padding-top:16px;
+    border-top:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:.03em;
+    color:var(--ink-40);
+  }
+
+  /* --------------------------------------------------------------- layouts */
+  @media (max-width:1180px){
+    .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .hero{grid-template-columns:minmax(0,1fr) minmax(300px,344px)}
+  }
+  @media (max-width:980px){
+    .hero{grid-template-columns:minmax(0,1fr)}
+    .panel{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;align-items:start}
+    .panel-head{grid-column:1/-1}
+    .picker{grid-column:1/-1;grid-template-columns:repeat(4,minmax(0,1fr))}
+    .meter-head{grid-column:1;margin-top:14px}
+    .meter{grid-column:1;align-items:flex-start}
+    .graph-wrap{grid-column:2;grid-row:2 / span 3;margin-top:14px}
+    .legend{grid-column:2}
+    .rules{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr));display:grid;gap:14px;margin-top:14px}
+    .rules div{grid-template-columns:14px 1fr;gap:6px}
+    .sheet-head p{text-align:left}
+  }
+  @media (max-width:760px){
+    .masthead{flex-direction:column;align-items:flex-start;gap:20px;padding-top:22px}
+    .specs{gap:22px}
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .sheet-head{flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:16px}
+    .sheet-head p{max-width:none}
+    .panel{grid-template-columns:1fr;gap:0}
+    .meter-head,.meter,.graph-wrap,.legend,.rules{grid-column:1;grid-row:auto}
+    .graph-wrap{margin-top:0}
+    .picker{display:flex;overflow-x:auto;gap:4px;margin:0 -14px;padding:0 14px 4px;scrollbar-width:none}
+    .picker::-webkit-scrollbar{display:none}
+    .pick{flex:0 0 auto;border:1px solid var(--line-soft);padding:7px 9px;font-size:11px}
+    .rules{display:none}
+  }
+  @media (max-width:560px){
+    :root{--pad:14px}
+    .lede{font-size:13px}
+    .specs{width:100%;justify-content:space-between;gap:12px}
+    #stage{height:clamp(260px,40vh,330px)}
+    .stage-caption{padding:11px 13px 12px}
+    .stage-caption h2{font-size:17px}
+    .stage-time{font-size:10px}
+    .transport{gap:6px}
+    .btn{min-height:36px;padding:0 11px}
+    .btn-primary{flex:1 1 auto;min-width:0}
+    .scrub{flex:1 1 100%;order:4;height:32px}
+    .card-copy{padding:8px 10px 10px}
+    .card-copy b{font-size:12px}
+    .card-copy small{font-size:10.5px}
+    .card-copy .card-dur{margin-top:5px;font-size:8.5px}
+    .fps b{font-size:38px}
+    footer{gap:8px;flex-direction:column;align-items:flex-start}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important;scroll-behavior:auto !important}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <div>
+      <div class="brandline"><span class="mark" aria-hidden="true"></span><b>BLIP</b><span class="kicker">agent mascot</span></div>
+      <h1>Mascot motion lab</h1>
+      <p class="lede">Twenty agent states drawn by one parameter renderer. Watch the pose, read the frame, then check the seam.</p>
+    </div>
+    <dl class="specs" aria-label="Lab facts">
+      <div><dt>States</dt><dd><b>20</b></dd></div>
+      <div><dt>Renderer</dt><dd>canvas 2d</dd></div>
+      <div><dt>Target</dt><dd><b>60</b> fps</dd></div>
+      <div><dt>Deps</dt><dd>none</dd></div>
+    </dl>
+  </header>
+
+  <main class="hero">
+    <section class="stage-col" aria-label="Preview stage">
+      <div class="stage">
+        <div class="stage-view">
+          <canvas id="stage" role="img" aria-label="Mascot preview"></canvas>
+          <div class="stage-top">
+            <span class="stage-index mono" id="stageIndex">01 / 20</span>
+            <span class="tag" id="stageTag" data-kind="loop">loop</span>
+          </div>
+        </div>
+        <div class="stage-caption">
+          <div>
+            <h2 id="stageName" aria-live="polite">Listening</h2>
+            <p id="stageNote">leans in, one slow glance</p>
+          </div>
+          <div class="stage-time mono"><b id="stageT">0.00</b> / <span id="stageDur">3.20</span> s</div>
+        </div>
+      </div>
+
+      <div class="transport">
+        <button id="playBtn" class="btn btn-primary" type="button" aria-pressed="false">
+          <span class="icon" aria-hidden="true" id="playIcon">
+            <svg viewBox="0 0 11 11" width="11" height="11"><path d="M2 1.2h2.4v8.6H2zM6.6 1.2H9v8.6H6.6z" fill="currentColor"/></svg>
+          </span>
+          <span id="playLabel">Pause</span>
+        </button>
+        <button id="prevBtn" class="btn btn-icon" type="button" aria-label="Previous state" title="Previous state (left arrow)">&#8592;</button>
+        <button id="nextBtn" class="btn btn-icon" type="button" aria-label="Next state" title="Next state (right arrow)">&#8594;</button>
+        <button id="seamBtn" class="btn" type="button" title="Pause one millisecond before the loop restarts">Loop seam</button>
+        <label class="scrub">
+          <span class="sr">Timeline</span>
+          <input id="scrub" type="range" min="0" max="3.2" step="0.001" value="0">
+        </label>
+      </div>
+      <p class="hint mono">Space pause &middot; Arrows change state &middot; Drag to scrub</p>
+    </section>
+
+    <aside class="panel" aria-label="State picker and frame meter">
+      <div class="panel-head"><span>State</span><span id="panelCount">20 of 20</span></div>
+      <div id="picker" class="picker" role="group" aria-label="Choose a state"></div>
+
+      <div class="panel-head meter-head"><span>Frame meter</span><span id="meterState">rolling 4 s</span></div>
+      <div class="meter">
+        <div class="fps"><b id="fpsVal">n/a</b><span>fps</span></div>
+        <div class="meter-rows">
+          <div><span>avg frame</span><b id="avgVal">--</b></div>
+          <div><span>p95</span><b id="p95Val">--</b></div>
+          <div><span>worst</span><b id="worstVal">--</b></div>
+          <div><span>draw</span><b id="drawVal">--</b></div>
+        </div>
+      </div>
+      <div class="graph-wrap"><canvas id="graph" aria-label="Rolling frame time graph" role="img"></canvas></div>
+      <div class="legend">
+        <span><i class="key" aria-hidden="true"></i>frame time</span>
+        <span><i class="key-limit" aria-hidden="true"></i>20 ms limit</span>
+        <span class="over" id="sampleVal">no frames</span>
+      </div>
+      <div class="rules" aria-label="Motion rules">
+        <div><span class="n">01</span><p>Arrivals take 200 to 300 ms and land with a damped overshoot.</p></div>
+        <div><span class="n">02</span><p>One directed motion per beat. Breath is ambience, not a second beat.</p></div>
+        <div><span class="n">03</span><p>Blinks pinch to 16 percent of the eye. They never vanish.</p></div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="banner" id="rmBanner" hidden>
+    <p>Reduced motion is on. Every state is drawn as a still frame.</p>
+    <button class="btn btn-small" id="rmEnable" type="button">Enable motion</button>
+  </div>
+
+  <section class="sheet" id="sheet" aria-label="All states">
+    <div class="sheet-head">
+      <div>
+        <div class="kicker">The sheet</div>
+        <h2>All twenty states</h2>
+      </div>
+      <p>Click a card to put it on the stage. Cards draw only while they are on screen.</p>
+    </div>
+    <div class="group-head"><span>01 to 12 / Original set</span><span id="coreMeta">12 states</span></div>
+    <div id="gridCore" class="grid"></div>
+    <div class="group-head"><span>13 to 20 / Extended set</span><span id="extMeta">8 states</span></div>
+    <div id="gridExt" class="grid"></div>
+  </section>
+
+  <footer>
+    <span>BLIP mascot motion lab</span>
+    <span>#FCFCFC canvas &middot; #000 ball &middot; #FFF eyes</span>
+    <span>No external dependencies</span>
+  </footer>
+</div>
+
+<script>
+/*!
+ * mascot-states.js
+ * BLIP mascot: twenty agent states on one parameter model.
+ * Zero dependencies. ES module that also publishes globalThis.MascotStates;
+ * build.mjs inlines the same body for the standalone lab page.
+ *
+ * Renderer model. Every length is in ball radii (R). y is down on the canvas.
+ *   dx, dy    ball offset from centre
+ *   sx, sy    ball scale
+ *   ex, ey    eye pair offset (ey is positive upwards)
+ *   gap       half the distance between eye centres
+ *   L         capsule length
+ *   th        stroke thickness
+ *   bend      arc bend in degrees (0 draws a capsule)
+ *   tilt      eye rotation in degrees
+ *   slant     opposite eye rotation in degrees
+ *   asym      per-eye length difference
+ *   roll      eye pair rotation around the ball centre, degrees
+ *   blink     1 open, BLINK_MIN pinched
+ *   spin      1 draws the system spinner instead of the ball
+ *
+ * Motion rules used by every state:
+ *   - arrivals are 200 to 300 ms with a damped overshoot (backOut)
+ *   - one-shot states return to rest and hold before the loop restarts
+ *   - blinks pinch; they never reach zero
+ *   - a gaze move carries the ball with it by 10 to 16 percent
+ */
+
+const MascotStates = (() => {
+  "use strict";
+
+  const P = Math.PI;
+  const TAU = P * 2;
+  const DEG = P / 180;
+  const BG = "#FCFCFC";
+  const INK = "#000000";
+  const EYE = "#FFFFFF";
+  const BLINK_MIN = 0.16;
+  const BLINK_LEN = 0.26;
+
+  const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+  const smooth = (v) => {
+    v = clamp01(v);
+    return v * v * (3 - 2 * v);
+  };
+  const easeOut3 = (v) => {
+    v = clamp01(v);
+    const a = 1 - v;
+    return 1 - a * a * a;
+  };
+  const easeInOut3 = (v) => {
+    v = clamp01(v);
+    return v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2;
+  };
+  /* Damped overshoot arrival: leaves fast, lands at exactly 1 with one small overshoot. */
+  const backOut = (v, k) => {
+    v = clamp01(v);
+    const c = k + 1;
+    const a = v - 1;
+    return 1 + c * a * a * a + k * a * a;
+  };
+  const seg = (t, a, b) => clamp01((t - a) / (b - a));
+  /* A gravity hop: parabolic, returns 0 outside its window. */
+  const hopAt = (t, a, d, h) => {
+    const u = (t - a) / d;
+    return u > 0 && u < 1 ? -4 * h * u * (1 - u) : 0;
+  };
+  /* Fast squash in, slow release out. */
+  const impact = (t, land, amp) => {
+    const u = (t - land) / 0.17;
+    if (u < 0 || u > 1) return 0;
+    return u < 0.18
+      ? amp * Math.sin((P * 0.5 * u) / 0.18)
+      : amp * Math.cos((P * 0.5 * (u - 0.18)) / 0.82);
+  };
+  /* Four stepped saccades across one sweep, with tiny holds. */
+  const sw = (v) => {
+    const k = Math.floor(v * 4);
+    const f = v * 4 - k;
+    return (k + smooth(f * 3)) / 4;
+  };
+  /* A pinch, not a vanish. 75 ms close, 40 ms hold, 145 ms open. */
+  const blinkOpen = (t, list) => {
+    if (!list || list.length === 0) return 1;
+    for (let i = 0; i < list.length; i++) {
+      const dt = t - list[i];
+      if (dt >= 0 && dt <= BLINK_LEN) {
+        if (dt < 0.075) return 1 - (1 - BLINK_MIN) * smooth(dt / 0.075);
+        if (dt < 0.115) return BLINK_MIN;
+        return BLINK_MIN + (1 - BLINK_MIN) * smooth((dt - 0.115) / 0.145);
+      }
+    }
+    return 1;
+  };
+
+  /* Hoisted so the render loop allocates nothing. */
+  const SEARCH_POINTS = [
+    [-0.26, 0.16],
+    [0.26, 0.12],
+    [0.22, -0.14],
+    [-0.22, -0.14],
+    [0, 0.06],
+  ];
+
+  const STATES = [
+    /* ---------------------------------------------------------------- core 12 */
+    {
+      id: "listening",
+      name: "Listening",
+      note: "leans in, one slow glance",
+      group: "core",
+      kind: "loop",
+      duration: 3.2,
+      still: 1.45,
+      blinks: [0.55],
+      write(t, o) {
+        o.L = 0.4;
+        o.th = 0.25;
+        o.gap = 0.33;
+        o.ey = 0;
+        o.sx = 1.04;
+        o.sy = 1.04;
+        o.dy = 0.02;
+        let g = 0;
+        if (t > 1.0) {
+          g = backOut(seg(t, 1.0, 1.28), 1.2) * (1 - backOut(seg(t, 1.9, 2.18), 1.2));
+        }
+        o.ex = -0.02 - 0.14 * g;
+        o.ey = 0.07 * g;
+        o.tilt = -2 * g;
+        o.dx = o.ex * 0.15;
+        o.dy = 0.02 - o.ey * 0.1;
+      },
+    },
+    {
+      id: "reading",
+      name: "Reading a file",
+      note: "line by line, body leads",
+      group: "core",
+      kind: "loop",
+      duration: 4.8,
+      still: 2.4,
+      blinks: [4.45],
+      write(t, o) {
+        const u = t / 4.8;
+        let x = 0;
+        let y = 0;
+        if (u < 0.38) {
+          x = sw(u / 0.38);
+        } else if (u < 0.5) {
+          const k = smooth((u - 0.38) / 0.12);
+          x = 1 - k;
+          y = k;
+        } else if (u < 0.88) {
+          x = sw((u - 0.5) / 0.38);
+          y = 1;
+        } else {
+          const k = smooth((u - 0.88) / 0.12);
+          x = 1 - k;
+          y = 1 - k;
+        }
+        o.L = 0.2;
+        o.th = 0.24;
+        o.ex = -0.24 + 0.48 * x;
+        o.ey = -0.2 - 0.07 * y;
+        o.dx = o.ex * 0.15;
+        o.dy = 0.085 - o.ey * 0.1;
+      },
+    },
+    {
+      id: "writing",
+      name: "Writing a file",
+      note: "keystrokes, eyes locked",
+      group: "core",
+      kind: "loop",
+      duration: 3.2,
+      still: 0.95,
+      blinks: [2.55],
+      write(t, o) {
+        o.L = 0.19;
+        o.th = 0.25;
+        o.gap = 0.31;
+        o.ex = -0.04;
+        o.ey = -0.17;
+        const m = (t - 0.3) % 0.22;
+        const tap = t > 0.3 && t < 1.75 && m < 0.13 ? Math.sin((P * m) / 0.13) : 0;
+        o.sy = 1 - 0.015 * tap;
+        o.dx = o.ex * 0.15;
+        o.dy = -o.ey * 0.1 + 0.012 * tap;
+      },
+    },
+    {
+      id: "editing",
+      name: "Editing",
+      note: "scan, spot, patch",
+      group: "core",
+      kind: "one shot",
+      duration: 3.6,
+      still: 1.52,
+      blinks: [2.8],
+      write(t, o) {
+        const on = backOut(seg(t, 0.15, 0.35), 1.0) * (1 - backOut(seg(t, 2.1, 2.4), 1.0));
+        const scan = -0.2 + 0.4 * sw(seg(t, 0.35, 1.3));
+        const ping = Math.exp(-Math.pow((t - 1.52) / 0.08, 2));
+        const m = (t - 1.75) % 0.11;
+        const tap = t > 1.75 && t < 2.1 && m < 0.06 ? Math.sin((P * m) / 0.06) : 0;
+        o.L = 0.31 + (0.2 - 0.31) * on + 0.18 * ping;
+        o.th = 0.25 - 0.005 * on + 0.02 * ping;
+        o.gap = 0.31 + 0.01 * on;
+        o.ex = -0.02 + (scan + 0.02) * on;
+        o.ey = -0.03 - 0.15 * on;
+        o.sx = 1 + 0.05 * ping;
+        o.sy = 1 + 0.05 * ping - 0.01 * tap;
+        o.dx = o.ex * 0.15;
+        o.dy = 0.07 * on + 0.018 * tap;
+      },
+    },
+    {
+      id: "searching",
+      name: "Searching",
+      note: "five darts, wide eyes",
+      group: "core",
+      kind: "loop",
+      duration: 3.0,
+      still: 1.0,
+      blinks: [1.92],
+      write(t, o) {
+        const p = SEARCH_POINTS;
+        const u = t / 0.6;
+        const i = Math.floor(u) % 5;
+        const k = backOut(seg(u % 1, 0.66, 1), 1.1);
+        const a = p[i];
+        const b = p[(i + 1) % 5];
+        const ex = a[0] + (b[0] - a[0]) * k;
+        const ey = a[1] + (b[1] - a[1]) * k;
+        o.L = 0.38;
+        o.th = 0.27;
+        o.gap = 0.33;
+        o.ex = ex;
+        o.ey = ey;
+        o.dx = ex * 0.2;
+        o.dy = -ey * 0.2;
+      },
+    },
+    {
+      id: "running",
+      name: "Running a command",
+      note: "slanted eyes, heartbeat",
+      group: "core",
+      kind: "loop",
+      duration: 1.6,
+      still: 0.4,
+      blinks: [],
+      write(t, o) {
+        const b = Math.pow(Math.sin((P * t) / 0.8), 8);
+        o.L = 0.2 - 0.01 * b;
+        o.th = 0.26 + 0.004 * b;
+        o.slant = -11;
+        o.ey = -0.05;
+        o.sx = 1 + 0.045 * b;
+        o.sy = 1 + 0.045 * b;
+        o.dy = -0.02 * b;
+      },
+    },
+    {
+      id: "approval",
+      name: "Needs approval",
+      note: "glances, then a hop",
+      group: "core",
+      kind: "one shot",
+      duration: 3.2,
+      still: 1.35,
+      blinks: [0.52],
+      write(t, o) {
+        o.L = 0.36;
+        o.th = 0.25;
+        o.gap = 0.33;
+        const g = backOut(seg(t, 0.9, 1.15), 1.15) * (1 - backOut(seg(t, 2.45, 2.72), 1.15));
+        const hop = hopAt(t, 1.8, 0.34, 0.1);
+        const imp = impact(t, 2.14, 0.035);
+        o.ex = -0.02 + 0.32 * g;
+        o.ey = -0.03 - 0.17 * g;
+        o.tilt = 2 * g;
+        o.L += 0.02 * g;
+        o.th += 0.008 * g;
+        o.sx = 1 + 0.5 * imp;
+        o.sy = 1 - 0.5 * imp;
+        o.dx = o.ex * 0.15;
+        o.dy = -o.ey * 0.14 + hop;
+      },
+    },
+    {
+      id: "unsure",
+      name: "Not sure",
+      note: "tilts, one eye longer",
+      group: "core",
+      kind: "loop",
+      duration: 3.6,
+      still: 0.9,
+      blinks: [1.45],
+      write(t, o) {
+        const s = Math.sin((TAU * t) / 3.6);
+        o.asym = 0.3;
+        o.roll = 9 * s;
+        o.ey = 0.06;
+        o.L = 0.3;
+        o.ex = 0.03 * s;
+        o.dx = o.ex * 0.15;
+      },
+    },
+    {
+      id: "done",
+      name: "Done",
+      note: "happy arcs, two hops, rest",
+      group: "core",
+      kind: "one shot",
+      duration: 3.2,
+      still: 0.9,
+      blinks: [2.45],
+      write(t, o) {
+        const arcs = backOut(seg(t, 0.04, 0.34), 1.15) * (1 - backOut(seg(t, 1.5, 1.8), 1.15));
+        const h1 = hopAt(t, 0.28, 0.42, 0.22);
+        const h2 = hopAt(t, 0.78, 0.3, 0.1);
+        const imp1 = impact(t, 0.7, 0.05);
+        const imp2 = impact(t, 1.08, 0.03);
+        const air = (Math.abs(h1) + Math.abs(h2)) / 0.22;
+        o.tilt = 90 * arcs;
+        o.bend = 140 * arcs;
+        o.gap = 0.31 + 0.04 * arcs;
+        o.ey = -0.03 + 0.06 * arcs;
+        o.L = 0.31 - 0.05 * arcs;
+        o.dy = h1 + h2;
+        o.sy = 1 + 0.025 * air - imp1 - 0.6 * imp2;
+        o.sx = 1 - 0.015 * air + 0.6 * imp1 + 0.4 * imp2;
+      },
+    },
+    {
+      id: "oops",
+      name: "Oops",
+      note: "droops, shakes no",
+      group: "core",
+      kind: "one shot",
+      duration: 3.0,
+      still: 0.65,
+      blinks: [2.0],
+      write(t, o) {
+        const droop = backOut(seg(t, 0.05, 0.32), 1.1) * (1 - backOut(seg(t, 1.08, 1.38), 1.1));
+        let sh = 0;
+        let rr = 0;
+        if (t > 0.42 && t < 1.08) {
+          const u = (t - 0.42) / 0.66;
+          sh = 0.07 * (1 - u) * Math.sin(TAU * 2.5 * u);
+          rr = -5 * (1 - u) * Math.sin(TAU * 2.5 * u);
+        }
+        o.slant = 18 * droop;
+        o.L = 0.31 - 0.05 * droop;
+        o.ey = -0.03 - 0.08 * droop;
+        o.sx = 1 + 0.05 * droop;
+        o.sy = 1 - 0.07 * droop;
+        o.dy = 0.06 * droop;
+        o.roll = rr;
+        o.dx = sh;
+      },
+    },
+    {
+      id: "replying",
+      name: "Replying",
+      note: "five speech pulses",
+      group: "core",
+      kind: "one shot",
+      duration: 2.8,
+      still: 0.43,
+      blinks: [2.45],
+      write(t, o) {
+        o.L = 0.33;
+        o.gap = 0.31;
+        let p = 0;
+        for (let i = 0; i < 5; i++) {
+          const u = (t - (0.3 + i * 0.42)) / 0.26;
+          if (u > 0 && u < 1) p += Math.sin(P * u);
+        }
+        o.sx = 1 - 0.03 * p;
+        o.sy = 1 + 0.05 * p;
+        o.dy = -0.035 * p;
+        o.L += 0.012 * p;
+        o.ey = -0.03 + 0.01 * p;
+      },
+    },
+    {
+      id: "sleeping",
+      name: "Sleeping",
+      note: "closed eyes, slow breath",
+      group: "core",
+      kind: "loop",
+      duration: 4.4,
+      still: 1.1,
+      blinks: [],
+      write(t, o) {
+        const b = Math.sin((TAU * t) / 4.4);
+        o.tilt = 90;
+        o.bend = -55;
+        o.L = 0.28;
+        o.th = 0.14;
+        o.gap = 0.33;
+        o.ey = -0.1;
+        o.dy = 0.1 + 0.012 * b;
+        o.sx = 1 + 0.02 * b;
+        o.sy = 1 + 0.025 * b;
+      },
+    },
+
+    /* ------------------------------------------------------------ extended 8 */
+    {
+      id: "idle",
+      name: "Idle",
+      note: "breath, two small glances",
+      group: "extended",
+      kind: "loop",
+      duration: 6.4,
+      still: 3.9,
+      blinks: [2.7, 5.5],
+      write(t, o) {
+        const c = Math.sin((TAU * t) / 6.4);
+        let g1 = 0;
+        let g2 = 0;
+        if (t > 1.15 && t < 2.15) {
+          g1 = backOut(seg(t, 1.15, 1.4), 1.1) * (1 - backOut(seg(t, 1.9, 2.15), 1.1));
+        }
+        if (t > 3.5 && t < 4.55) {
+          g2 = backOut(seg(t, 3.5, 3.75), 1.1) * (1 - backOut(seg(t, 4.3, 4.55), 1.1));
+        }
+        o.sx = 1 + 0.012 * c;
+        o.sy = 1 + 0.018 * c;
+        o.ex = -0.02 - 0.11 * g1 + 0.09 * g2;
+        o.ey = -0.03 + 0.03 * g1;
+        o.dx = o.ex * 0.15;
+        o.dy = 0.004 * c - o.ey * 0.1;
+      },
+    },
+    {
+      id: "waking",
+      name: "Waking",
+      note: "peek, snap, look around",
+      group: "extended",
+      kind: "snap",
+      duration: 5.8,
+      still: 1.4,
+      blinks: [3.5],
+      write(t, o) {
+        const ballDown =
+          t < 0.55 ? 1 : t < 0.87 ? 1 - easeOut3(seg(t, 0.55, 0.87)) : t < 4.3 ? 0 : easeInOut3(seg(t, 4.3, 4.95));
+        const eyeDoze = t < 0.87 ? 1 : t < 4.3 ? 0 : easeInOut3(seg(t, 4.3, 4.95));
+        let g1 = 0;
+        let g2 = 0;
+        if (t > 1.15 && t < 2.25) {
+          g1 = backOut(seg(t, 1.15, 1.42), 1.15) * (1 - backOut(seg(t, 2.0, 2.25), 1.1));
+        }
+        if (t > 2.4 && t < 3.35) {
+          g2 = backOut(seg(t, 2.4, 2.67), 1.15) * (1 - backOut(seg(t, 3.1, 3.35), 1.1));
+        }
+        const settle = t > 0.87 ? 0.03 * Math.exp(-9 * (t - 0.87)) * Math.sin(TAU * 3.4 * (t - 0.87)) : 0;
+        o.dx = 0.11 * ballDown;
+        o.dy = 0.62 * ballDown + settle;
+        o.sx = 1 - 0.11 * ballDown;
+        o.sy = 1 - 0.1 * ballDown;
+        o.L = 0.31 - 0.05 * eyeDoze;
+        o.th = 0.25 - 0.15 * eyeDoze;
+        o.gap = 0.31 + 0.03 * eyeDoze;
+        o.ex = -0.02 + 0.18 * eyeDoze - 0.18 * g1 + 0.26 * g2;
+        o.ey = -0.03 + 0.35 * eyeDoze + 0.4 * g1 + 0.36 * g2;
+        o.tilt = 64 * eyeDoze;
+        o.dx += (o.ex + 0.02) * 0.12;
+        o.dy += -(o.ey + 0.03) * 0.12;
+      },
+    },
+    {
+      id: "thinking",
+      name: "Thinking",
+      note: "orbit with one short eye",
+      group: "extended",
+      kind: "loop",
+      duration: 5.2,
+      still: 1.3,
+      blinks: [2.4],
+      write(t, o) {
+        const a = (TAU * t) / 5.2;
+        const c = Math.cos(a);
+        const s = Math.sin(a);
+        o.ex = -0.12 + 0.11 * c;
+        o.ey = 0.1 + 0.08 * s;
+        o.dx = o.ex * 0.16;
+        o.dy = -o.ey * 0.16;
+        o.roll = 4 * s;
+        o.L = 0.26;
+        o.th = 0.24;
+        o.gap = 0.32;
+        o.asym = 0.12;
+      },
+    },
+    {
+      id: "curious",
+      name: "Curious",
+      note: "leans in, head tilt",
+      group: "extended",
+      kind: "loop",
+      duration: 4.4,
+      still: 1.1,
+      blinks: [2.9],
+      write(t, o) {
+        const s = Math.sin((TAU * t) / 4.4);
+        o.roll = 9 * s;
+        o.asym = 0.24;
+        o.L = 0.38;
+        o.th = 0.26;
+        o.gap = 0.315;
+        o.ex = -0.07 + 0.06 * s;
+        o.ey = 0.01;
+        o.dx = o.ex * 0.15;
+        o.sx = 1.05 + 0.008 * s;
+        o.sy = 1.04 + 0.008 * s;
+        o.dy = 0.02;
+      },
+    },
+    {
+      id: "alert",
+      name: "Alert",
+      note: "pops wide, tiny shake",
+      group: "extended",
+      kind: "one shot",
+      duration: 2.0,
+      still: 0.62,
+      blinks: [1.65],
+      write(t, o) {
+        const pop = backOut(seg(t, 0.14, 0.4), 1.5) * (1 - backOut(seg(t, 1.2, 1.48), 1.1));
+        let shake = 0;
+        if (t > 0.5 && t < 0.85) {
+          const u = (t - 0.5) / 0.35;
+          shake = 0.01 * (1 - u) * Math.sin(TAU * 4 * u);
+        }
+        o.L = 0.31 + 0.07 * pop;
+        o.th = 0.25 + 0.02 * pop;
+        o.gap = 0.31 + 0.03 * pop;
+        o.ey = -0.03 + 0.09 * pop;
+        o.ex = -0.02 + 0.04 * pop;
+        o.sx = 1 + 0.09 * pop;
+        o.sy = 1 + 0.09 * pop;
+        o.dy = -0.02 * pop;
+        o.dx = o.ex * 0.15 + shake;
+      },
+    },
+    {
+      id: "deep-focus",
+      name: "Deep focus",
+      note: "narrow eyes, held breath",
+      group: "extended",
+      kind: "loop",
+      duration: 6.0,
+      still: 1.5,
+      blinks: [4.3],
+      write(t, o) {
+        const b = Math.sin((TAU * t) / 6.0);
+        o.L = 0.24;
+        o.th = 0.25;
+        o.gap = 0.3;
+        o.ey = -0.04;
+        o.slant = -5;
+        o.bend = -10;
+        o.sx = 1 + 0.008 * b;
+        o.sy = 1 + 0.01 * b;
+        o.dy = 0.004 * b;
+      },
+    },
+    {
+      id: "offline",
+      name: "Offline",
+      note: "droops, no blink",
+      group: "extended",
+      kind: "loop",
+      duration: 5.6,
+      still: 1.4,
+      blinks: [],
+      write(t, o) {
+        const s = Math.sin((TAU * t) / 5.6);
+        o.tilt = 38;
+        o.bend = -24;
+        o.L = 0.26;
+        o.th = 0.2;
+        o.gap = 0.32;
+        o.ey = -0.02;
+        o.dy = 0.07;
+        o.sx = 0.99;
+        o.sy = 0.97;
+        o.roll = 2 * s;
+        o.dx = 0.01 * s;
+      },
+    },
+    {
+      id: "loading",
+      name: "Loading",
+      note: "hard cut to the spinner",
+      group: "extended",
+      kind: "cut",
+      duration: 1.44,
+      still: 0,
+      blinks: [],
+      write(t, o) {
+        o.spin = 1;
+      },
+    },
+  ];
+
+  const BY_ID = Object.create(null);
+  for (let i = 0; i < STATES.length; i++) BY_ID[STATES[i].id] = STATES[i];
+
+  const resolveState = (state) => {
+    if (state && state.write) return state;
+    if (typeof state === "number") return STATES[((state % STATES.length) + STATES.length) % STATES.length];
+    if (typeof state === "string") return BY_ID[state] || STATES[0];
+    return STATES[0];
+  };
+
+  const BASE_KEYS = ["dx", "dy", "sx", "sy", "ex", "ey", "gap", "L", "th", "bend", "tilt", "slant", "asym", "roll", "blink", "spin"];
+
+  function resetPose(o) {
+    o.dx = 0;
+    o.dy = 0;
+    o.sx = 1;
+    o.sy = 1;
+    o.ex = -0.02;
+    o.ey = -0.03;
+    o.gap = 0.31;
+    o.L = 0.31;
+    o.th = 0.25;
+    o.bend = 0;
+    o.tilt = 0;
+    o.slant = 0;
+    o.asym = 0;
+    o.roll = 0;
+    o.blink = 1;
+    o.spin = 0;
+  }
+
+  function poseFor(state, t, o) {
+    resetPose(o);
+    state.write(t, o);
+    o.blink = blinkOpen(t, state.blinks);
+    return o;
+  }
+
+  const SCRATCH = {};
+
+  function drawSpinner(ctx, cx, cy, R, t) {
+    const step = Math.floor(t / 0.18) % 8;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.lineCap = "round";
+    ctx.lineWidth = R * 0.16;
+    ctx.strokeStyle = INK;
+    for (let j = 0; j < 8; j++) {
+      const trail = (step - j + 8) % 8;
+      ctx.globalAlpha = 1 - trail * 0.12;
+      ctx.save();
+      ctx.rotate((j * P) / 4);
+      ctx.beginPath();
+      ctx.moveTo(0, -R * 0.3);
+      ctx.lineTo(0, -R * 0.68);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  /**
+   * Draw one mascot frame.
+   * drawMascot(ctx, state, t, options)
+   * options: { width, height, pixelRatio, background }
+   */
+  function drawMascot(ctx, state, t, options) {
+    const st = resolveState(state);
+    const o = poseFor(st, t, SCRATCH);
+    const opt = options || {};
+    const dpr = opt.pixelRatio || 1;
+    const w = opt.width || ctx.canvas.width / dpr;
+    const h = opt.height || ctx.canvas.height / dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = opt.background || BG;
+    ctx.fillRect(0, 0, w, h);
+
+    const R = Math.min(w, h) * 0.28;
+    const cx = w * 0.5;
+    const cy = h * 0.5;
+
+    if (o.spin) {
+      drawSpinner(ctx, cx, cy, R, t);
+      return;
+    }
+
+    ctx.save();
+    ctx.translate(cx + o.dx * R, cy + o.dy * R);
+    ctx.scale(o.sx, o.sy);
+
+    ctx.fillStyle = INK;
+    ctx.beginPath();
+    ctx.arc(0, 0, R, 0, TAU);
+    ctx.fill();
+
+    ctx.strokeStyle = EYE;
+    ctx.lineWidth = o.th * R;
+    ctx.lineCap = "round";
+    const r = o.roll * DEG;
+    const cr = Math.cos(r);
+    const sr = Math.sin(r);
+
+    for (let i = 0; i < 2; i++) {
+      const s = i === 0 ? -1 : 1;
+      const ex = (o.ex + s * o.gap * cr) * R;
+      const ey = (-o.ey + s * o.gap * sr) * R;
+      const L = o.L * (1 + s * o.asym) * R;
+      const ang = (o.tilt - s * o.slant) * DEG;
+      const be = o.bend * DEG;
+      const a = be < 0 ? -be : be;
+      ctx.save();
+      ctx.translate(ex, ey);
+      ctx.scale(1, o.blink);
+      ctx.rotate(ang);
+      ctx.beginPath();
+      if (a < 0.02) {
+        ctx.moveTo(0, -L / 2);
+        ctx.lineTo(0, L / 2 + 0.001);
+      } else {
+        if (be < 0) ctx.scale(-1, 1);
+        const q = L / a;
+        ctx.translate((-q * (1 - Math.cos(a / 2))) / 2, 0);
+        ctx.arc(q, 0, q, P - a / 2, P + a / 2);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  /* ---------------------------------------------------------------- runtime */
+
+  const hasDOM = typeof window !== "undefined" && typeof document !== "undefined";
+  const instances = [];
+  let rafId = 0;
+  let lastNow = 0;
+  let motionOverride = null;
+  let motionQuery = null;
+  let mediaHooked = false;
+
+  const drawRing = new Float64Array(300);
+  let drawAt = 0;
+  let drawFrames = 0;
+  let lastDrawMs = 0;
+
+  function prefersReduced() {
+    if (motionOverride !== null) return motionOverride;
+    if (!hasDOM) return false;
+    if (!motionQuery) motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    return motionQuery.matches;
+  }
+
+  function onMotionChange() {
+    const still = prefersReduced();
+    for (let i = 0; i < instances.length; i++) {
+      const inst = instances[i];
+      if (still) inst.time = inst.state.still;
+      inst._draw();
+    }
+    if (!still) wake();
+    else stopLoop();
+  }
+
+  function hookMedia() {
+    if (mediaHooked || !hasDOM || !window.matchMedia) return;
+    mediaHooked = true;
+    motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (motionQuery.addEventListener) motionQuery.addEventListener("change", onMotionChange);
+    else if (motionQuery.addListener) motionQuery.addListener(onMotionChange);
+    document.addEventListener("visibilitychange", () => {
+      lastNow = 0;
+      if (document.hidden) stopLoop();
+      else wake();
+    });
+  }
+
+  function setMotionOverride(v) {
+    motionOverride = v === null || v === undefined ? null : !!v;
+    onMotionChange();
+  }
+
+  function pushDraw(ms) {
+    drawRing[drawAt] = ms;
+    drawAt = (drawAt + 1) % drawRing.length;
+    if (drawFrames < drawRing.length) drawFrames++;
+    lastDrawMs = ms;
+  }
+
+  function getRenderStats() {
+    const n = drawFrames;
+    if (!n) return { frames: 0, last: 0, avg: 0, p95: 0, max: 0 };
+    const copy = new Float64Array(n);
+    let sum = 0;
+    let max = 0;
+    for (let i = 0; i < n; i++) {
+      const v = drawRing[i];
+      copy[i] = v;
+      sum += v;
+      if (v > max) max = v;
+    }
+    copy.sort();
+    return {
+      frames: n,
+      last: lastDrawMs,
+      avg: sum / n,
+      p95: copy[Math.min(n - 1, Math.floor(n * 0.95))],
+      max,
+    };
+  }
+
+  function resetRenderStats() {
+    drawAt = 0;
+    drawFrames = 0;
+    lastDrawMs = 0;
+  }
+
+  function tick(now) {
+    rafId = 0;
+    if (!hasDOM || document.hidden) {
+      lastNow = 0;
+      return;
+    }
+    const dt = lastNow ? Math.min(0.05, (now - lastNow) / 1000) : 0;
+    lastNow = now;
+    const t0 =
+      typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+    let active = false;
+    for (let i = 0; i < instances.length; i++) {
+      const inst = instances[i];
+      if (inst._wantsFrame()) {
+        active = true;
+        inst._tick(dt);
+      }
+    }
+    const t1 =
+      typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+    pushDraw(t1 - t0);
+    if (active) {
+      rafId = requestAnimationFrame(tick);
+    } else {
+      lastNow = 0;
+    }
+  }
+
+  function wake() {
+    if (!hasDOM || rafId || prefersReduced()) return;
+    lastNow = 0;
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function stopLoop() {
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+    lastNow = 0;
+  }
+
+  /**
+   * createMascot(canvas, state, options)
+   * Handles DPR, resize, a shared requestAnimationFrame loop, visibility and
+   * reduced motion. Returns a small controller.
+   */
+  function createMascot(canvas, state, options) {
+    hookMedia();
+    const opts = options || {};
+    const ctx = canvas.getContext("2d", { alpha: false });
+    const dprCap = opts.dprCap || 2;
+    const instance = {
+      canvas,
+      ctx,
+      state: resolveState(state),
+      time: opts.phase || 0,
+      paused: !!opts.paused,
+      visible: opts.visibleOnly === false,
+      dpr: 1,
+      w: 0,
+      h: 0,
+      drawOpts: { width: 1, height: 1, pixelRatio: 1 },
+      _io: null,
+      _ro: null,
+      _wantsFrame() {
+        if (this.paused || prefersReduced() || !this.visible) return false;
+        return true;
+      },
+      _tick(dt) {
+        if (!this._wantsFrame()) return;
+        let t = this.time + dt;
+        const d = this.state.duration;
+        if (t >= d || t < 0) t = ((t % d) + d) % d;
+        this.time = t;
+        this._draw();
+      },
+      _resize() {
+        const cw = canvas.clientWidth;
+        const ch = canvas.clientHeight;
+        if (!cw || !ch) return;
+        const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
+        const pw = Math.max(1, Math.round(cw * dpr));
+        const ph = Math.max(1, Math.round(ch * dpr));
+        if (canvas.width !== pw || canvas.height !== ph || this.dpr !== dpr) {
+          canvas.width = pw;
+          canvas.height = ph;
+          this.dpr = dpr;
+          this.w = cw;
+          this.h = ch;
+          this.drawOpts.width = cw;
+          this.drawOpts.height = ch;
+          this.drawOpts.pixelRatio = dpr;
+        }
+        this._draw();
+      },
+      _draw() {
+        if (!this.w || !this.h) return;
+        drawMascot(this.ctx, this.state, this.time, this.drawOpts);
+      },
+      setState(next, at) {
+        this.state = resolveState(next);
+        const wanted = prefersReduced() ? this.state.still : typeof at === "number" ? at : 0;
+        this.time = Math.max(0, Math.min(this.state.duration, wanted));
+        this._draw();
+        wake();
+        return this;
+      },
+      getState() {
+        return this.state;
+      },
+      seek(t) {
+        this.time = Math.max(0, Math.min(this.state.duration, t));
+        this._draw();
+        return this;
+      },
+      pause() {
+        this.paused = true;
+        return this;
+      },
+      play() {
+        this.paused = false;
+        wake();
+        return this;
+      },
+      isPaused() {
+        return this.paused || prefersReduced();
+      },
+      getTime() {
+        return this.time;
+      },
+      resize() {
+        this._resize();
+        return this;
+      },
+      destroy() {
+        if (this._io) this._io.disconnect();
+        if (this._ro) this._ro.disconnect();
+        const at = instances.indexOf(this);
+        if (at >= 0) instances.splice(at, 1);
+        return undefined;
+      },
+    };
+
+    if (hasDOM) {
+      if (opts.visibleOnly !== false && typeof IntersectionObserver !== "undefined") {
+        instance._io = new IntersectionObserver(
+          (entries) => {
+            const e = entries[0];
+            instance.visible = !!e.isIntersecting;
+            if (instance.visible) wake();
+          },
+          { rootMargin: "80px 0px" }
+        );
+        instance._io.observe(canvas);
+      }
+      if (typeof ResizeObserver !== "undefined") {
+        instance._ro = new ResizeObserver(() => instance._resize());
+        instance._ro.observe(canvas);
+      } else {
+        window.addEventListener("resize", () => instance._resize());
+      }
+    }
+
+    if (prefersReduced()) instance.time = instance.state.still;
+    instances.push(instance);
+    instance._resize();
+    if (!instance.paused && !prefersReduced() && instance.visible) wake();
+    return instance;
+  }
+
+  return {
+    STATES,
+    MASCOT_STATES: STATES,
+    drawMascot,
+    createMascot,
+    resolveState,
+    getRenderStats,
+    resetRenderStats,
+    prefersReducedMotion: prefersReduced,
+    setMotionOverride,
+    BASE_KEYS,
+    resetPose,
+    poseFor,
+  };
+})();
+
+if (typeof globalThis !== "undefined") globalThis.MascotStates = MascotStates;
+const { STATES, MASCOT_STATES, drawMascot, createMascot, resolveState, getRenderStats, resetRenderStats, prefersReducedMotion, setMotionOverride, BASE_KEYS, resetPose, poseFor } = MascotStates;
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  const M = window.MascotStates;
+  const STATES = M.STATES;
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const pad = (n) => (n < 10 ? "0" + n : String(n));
+  const QUERY = new URLSearchParams(location.search);
+  const FORCE_ALL = QUERY.has("all");
+  const NO_METER = QUERY.has("nometer");
+  const reduceQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const ICON_PAUSE = '<svg viewBox="0 0 11 11" width="11" height="11"><path d="M2 1.2h2.4v8.6H2zM6.6 1.2H9v8.6H6.6z" fill="currentColor"/></svg>';
+  const ICON_PLAY = '<svg viewBox="0 0 11 11" width="11" height="11"><path d="M2.4 1.1l7 4.4-7 4.4z" fill="currentColor"/></svg>';
+
+  const stageCanvas = $("#stage");
+  const graphCanvas = $("#graph");
+  const playBtn = $("#playBtn");
+  const playLabel = $("#playLabel");
+  const playIcon = $("#playIcon");
+  const scrub = $("#scrub");
+  const fpsVal = $("#fpsVal");
+  const avgVal = $("#avgVal");
+  const p95Val = $("#p95Val");
+  const worstVal = $("#worstVal");
+  const drawVal = $("#drawVal");
+  const sampleVal = $("#sampleVal");
+  const meterState = $("#meterState");
+  const banner = $("#rmBanner");
+
+  let current = 0;
+  let paused = false;
+  let userMotion = false;
+  let pausedByReduce = false;
+  let stageCtl = null;
+  const cards = [];
+
+  /* ------------------------------------------------------------- markup */
+  const picker = $("#picker");
+  picker.innerHTML = STATES.map((s, i) =>
+    '<button class="pick" type="button" data-id="' + s.id + '" aria-pressed="false" title="' + s.name + '">' +
+      '<span class="n">' + pad(i + 1) + '</span><span class="nm">' + s.name + '</span>' +
+    "</button>"
+  ).join("");
+
+  function cardHTML(s, i) {
+    return '<button class="card" type="button" data-id="' + s.id + '" aria-pressed="false" aria-label="' + s.name + ': ' + s.note + '">' +
+      '<span class="card-canvas" aria-hidden="true"></span>' +
+      '<span class="card-num mono">' + pad(i + 1) + '</span>' +
+      '<span class="card-dot" aria-hidden="true"></span>' +
+      '<span class="card-copy"><b>' + s.name + '</b><small>' + s.note + '</small>' +
+      '<span class="card-dur mono">' + s.duration.toFixed(2) + " s &middot; " + s.kind + '</span></span>' +
+    "</button>";
+  }
+  $("#gridCore").innerHTML = STATES.slice(0, 12).map((s, i) => cardHTML(s, i)).join("");
+  $("#gridExt").innerHTML = STATES.slice(12).map((s, i) => cardHTML(s, i + 12)).join("");
+
+  /* ------------------------------------------------------------- controllers */
+  stageCtl = M.createMascot(stageCanvas, STATES[current], { dprCap: 1.5, paused: true });
+
+  // The sheet is one viewport below the stage. Its twenty canvases are built
+  // only when the sheet approaches the viewport, so the stage view stays light.
+  let cardsBuilt = false;
+  function buildCards() {
+    if (cardsBuilt) return;
+    cardsBuilt = true;
+    document.querySelectorAll(".card").forEach((el) => {
+      const id = el.dataset.id;
+      const index = STATES.findIndex((s) => s.id === id);
+      const st = STATES[index];
+      const holder = el.querySelector(".card-canvas");
+      const canvas = document.createElement("canvas");
+      canvas.setAttribute("aria-hidden", "true");
+      holder.replaceWith(canvas);
+      const ctl = M.createMascot(canvas, st, {
+        dprCap: 1.25,
+        phase: st.still,
+        visibleOnly: !FORCE_ALL,
+        paused: true,
+      });
+      ctl.card = el;
+      cards.push(ctl);
+      el.addEventListener("click", () => select(el.dataset.id, true));
+    });
+    setPressed();
+    applyPaused();
+  }
+
+  if (FORCE_ALL) {
+    buildCards();
+  } else if (typeof IntersectionObserver !== "undefined") {
+    const sheetWatch = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          sheetWatch.disconnect();
+          buildCards();
+        }
+      },
+      { rootMargin: "0px 0px -100px 0px" }
+    );
+    sheetWatch.observe($("#sheet"));
+  } else {
+    buildCards();
+  }
+
+  /* ------------------------------------------------------------- motion mode */
+  function reducedActive() {
+    return reduceQuery.matches && !userMotion;
+  }
+
+  function syncMotion(resume) {
+    const reduce = reducedActive();
+    M.setMotionOverride(reduce ? true : reduceQuery.matches ? false : null);
+    document.documentElement.dataset.motion = reduce ? "reduced" : "full";
+    banner.hidden = !reduce;
+    if (reduce) {
+      if (!paused) {
+        paused = true;
+        pausedByReduce = true;
+      }
+      stopMeter();
+      resetMeterReadout();
+    } else if (resume && pausedByReduce) {
+      paused = false;
+      pausedByReduce = false;
+    }
+    applyPaused();
+    drawGraph();
+  }
+
+  function enableMotion() {
+    userMotion = true;
+    pausedByReduce = false;
+    paused = false;
+    syncMotion(true);
+    updateStageTime();
+    startMeter();
+  }
+
+  /* ------------------------------------------------------------- selection */
+  function setPressed() {
+    const id = STATES[current].id;
+    document.querySelectorAll(".pick").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.id === id)));
+    cards.forEach((c) => c.card.setAttribute("aria-pressed", String(c.state.id === id)));
+  }
+
+  function updateStageMeta() {
+    const s = STATES[current];
+    $("#stageIndex").textContent = pad(current + 1) + " / " + STATES.length;
+    $("#stageName").textContent = s.name;
+    $("#stageNote").textContent = s.note;
+    $("#stageDur").textContent = s.duration.toFixed(2);
+    const tag = $("#stageTag");
+    tag.textContent = s.kind;
+    tag.dataset.kind = s.kind;
+    stageCanvas.setAttribute("aria-label", s.name + ", " + s.kind + ", " + s.duration.toFixed(2) + " seconds. " + s.note);
+    scrub.max = String(s.duration);
+    updateStageTime();
+  }
+
+  function select(id, fromCard) {
+    const index = STATES.findIndex((s) => s.id === id);
+    if (index < 0) return;
+    current = index;
+    stageCtl.setState(STATES[current], 0);
+    setPressed();
+    updateStageMeta();
+    if (fromCard && window.innerWidth < 981) {
+      $(".stage").scrollIntoView({ behavior: reducedActive() ? "auto" : "smooth", block: "start" });
+    }
+  }
+
+  picker.addEventListener("click", (e) => {
+    const b = e.target.closest(".pick");
+    if (b) select(b.dataset.id, false);
+  });
+
+  /* ------------------------------------------------------------- transport */
+  function updateStageTime() {
+    const t = stageCtl ? stageCtl.getTime() : 0;
+    const d = STATES[current].duration;
+    $("#stageT").textContent = t.toFixed(2);
+    if (document.activeElement !== scrub) scrub.value = String(Math.min(t, d));
+  }
+
+  function applyPaused() {
+    const showPause = !paused;
+    playLabel.textContent = showPause ? "Pause" : "Play";
+    playBtn.setAttribute("aria-pressed", String(paused));
+    playIcon.innerHTML = showPause ? ICON_PAUSE : ICON_PLAY;
+    if (stageCtl) {
+      if (paused) stageCtl.pause();
+      else stageCtl.play();
+    }
+    for (const c of cards) {
+      if (paused) c.pause();
+      else if (!reducedActive()) c.play();
+    }
+  }
+
+  function setPaused(v) {
+    if (reducedActive() && !v) {
+      enableMotion();
+      return;
+    }
+    paused = v;
+    applyPaused();
+    if (paused) {
+      stopMeter();
+      meterState.textContent = reducedActive() ? "still frame" : "paused";
+    } else {
+      startMeter();
+    }
+    updateStageTime();
+  }
+
+  playBtn.addEventListener("click", () => setPaused(!paused));
+  $("#rmEnable").addEventListener("click", enableMotion);
+
+  function step(delta) {
+    select(STATES[(current + delta + STATES.length) % STATES.length].id, false);
+  }
+  $("#prevBtn").addEventListener("click", () => step(-1));
+  $("#nextBtn").addEventListener("click", () => step(1));
+  $("#seamBtn").addEventListener("click", () => {
+    setPaused(true);
+    stageCtl.seek(STATES[current].duration - 0.001);
+    updateStageTime();
+  });
+  scrub.addEventListener("input", () => {
+    if (!paused) setPaused(true);
+    stageCtl.seek(Number(scrub.value));
+    updateStageTime();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = e.target;
+    if (t && /^(INPUT|BUTTON|SELECT|TEXTAREA|A)$/.test(t.tagName)) return;
+    if (e.code === "Space") {
+      e.preventDefault();
+      setPaused(!paused);
+    } else if (e.code === "ArrowLeft") {
+      e.preventDefault();
+      step(-1);
+    } else if (e.code === "ArrowRight") {
+      e.preventDefault();
+      step(1);
+    }
+  });
+
+  reduceQuery.addEventListener("change", () => {
+    if (!reduceQuery.matches) userMotion = false;
+    syncMotion(true);
+  });
+  if (reduceQuery.matches) paused = true;
+
+  /* ------------------------------------------------------------------ meter */
+  const RING = 640;
+  const deltas = new Float64Array(RING);
+  let dAt = 0;
+  let dCount = 0;
+  let meterRaf = 0;
+  let meterOn = false;
+  let lastFrame = 0;
+  let lastUi = 0;
+  let lastTime = 0;
+  let lastGraph = 0;
+  let graphDirty = true;
+  let meterWarm = false;
+  let warmUntil = 0;
+
+  function resetMeterReadout() {
+    fpsVal.textContent = "n/a";
+    avgVal.textContent = "--";
+    p95Val.textContent = "--";
+    worstVal.textContent = "--";
+    drawVal.textContent = "--";
+    sampleVal.textContent = "no frames";
+    drawGraph([]);
+  }
+
+  function stopMeter() {
+    if (!meterOn) return;
+    meterOn = false;
+    if (meterRaf) cancelAnimationFrame(meterRaf);
+    meterRaf = 0;
+    lastFrame = 0;
+    graphDirty = true;
+  }
+  function startMeter() {
+    if (NO_METER) { meterState.textContent = "meter off"; return; }
+    if (meterOn || reducedActive()) return;
+    meterOn = true;
+    lastFrame = 0;
+    lastUi = 0;
+    lastTime = 0;
+    dAt = 0;
+    dCount = 0;
+    meterWarm = true;
+    warmUntil = performance.now() + 900;
+    meterState.textContent = "warming up";
+    meterRaf = requestAnimationFrame(meterTick);
+  }
+
+  function meterTick(now) {
+    if (!meterOn) return;
+    if (meterWarm) {
+      if (now >= warmUntil) {
+        meterWarm = false;
+        dAt = 0;
+        dCount = 0;
+        lastFrame = now;
+        lastUi = 0;
+        meterState.textContent = "rolling 4 s";
+      } else {
+        lastFrame = now;
+        meterRaf = requestAnimationFrame(meterTick);
+        return;
+      }
+    }
+    if (lastFrame) {
+      const dt = now - lastFrame;
+      if (dt > 0 && dt < 1000) {
+        deltas[dAt] = dt;
+        dAt = (dAt + 1) % RING;
+        if (dCount < RING) dCount++;
+        graphDirty = true;
+      }
+    }
+    lastFrame = now;
+    if (now - lastTime > 100) {
+      updateStageTime();
+      lastTime = now;
+    }
+    if (now - lastUi > 500) {
+      updateMeter();
+      lastUi = now;
+    }
+    meterRaf = requestAnimationFrame(meterTick);
+  }
+
+  function recent(n) {
+    const count = Math.min(n, dCount);
+    const out = new Array(count);
+    let at = dAt - count;
+    if (at < 0) at += RING;
+    for (let i = 0; i < count; i++) {
+      out[i] = deltas[at];
+      at = (at + 1) % RING;
+    }
+    return out;
+  }
+
+  function percentile(sorted, p) {
+    if (!sorted.length) return 0;
+    return sorted[Math.min(sorted.length - 1, Math.max(0, Math.ceil(sorted.length * p) - 1))];
+  }
+
+  function updateMeter() {
+    const arr = recent(240);
+    if (!arr.length) return;
+    let sum = 0;
+    let worst = 0;
+    let over = 0;
+    for (const v of arr) {
+      sum += v;
+      if (v > worst) worst = v;
+      if (v > 20) over++;
+    }
+    const avg = sum / arr.length;
+    const sorted = arr.slice().sort((a, b) => a - b);
+    const p95 = percentile(sorted, 0.95);
+    fpsVal.textContent = (1000 / avg).toFixed(1);
+    avgVal.textContent = avg.toFixed(1) + " ms";
+    p95Val.textContent = p95.toFixed(1) + " ms";
+    worstVal.textContent = worst.toFixed(1) + " ms";
+    sampleVal.textContent = over + " over 20 ms";
+    if (graphDirty && performance.now() - lastGraph > 1000) {
+      const draw = M.getRenderStats();
+      drawVal.textContent = (draw.frames ? draw.avg : 0).toFixed(2) + " ms";
+      drawGraph(arr);
+      graphDirty = false;
+      lastGraph = performance.now();
+    }
+  }
+
+  function drawGraph(arr) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = graphCanvas.clientWidth || 320;
+    const h = graphCanvas.clientHeight || 92;
+    const pw = Math.max(1, Math.round(w * dpr));
+    const ph = Math.max(1, Math.round(h * dpr));
+    if (graphCanvas.width !== pw || graphCanvas.height !== ph) {
+      graphCanvas.width = pw;
+      graphCanvas.height = ph;
+    }
+    const ctx = graphCanvas.getContext("2d", { alpha: false });
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, w, h);
+
+    const yMax = 50;
+    const top = 8;
+    const bottom = h - 8;
+    const y = (v) => bottom - (Math.min(v, yMax) / yMax) * (bottom - top);
+
+    // seconds grid: 240 frames is roughly four seconds
+    ctx.strokeStyle = "rgba(0,0,0,.05)";
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 4; i++) {
+      const x = (i / 4) * w;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = "rgba(0,0,0,.22)";
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.moveTo(0, y(16.7));
+    ctx.lineTo(w, y(16.7));
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(0,0,0,.42)";
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(0, y(20));
+    ctx.lineTo(w, y(20));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const data = arr || recent(240);
+    if (data.length > 1) {
+      const stepX = w / (data.length - 1);
+      ctx.beginPath();
+      for (let i = 0; i < data.length; i++) {
+        const px = i * stepX;
+        const py = y(data[i]);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.lineTo(w, bottom);
+      ctx.lineTo(0, bottom);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(0,0,0,.055)";
+      ctx.fill();
+
+      ctx.beginPath();
+      for (let i = 0; i < data.length; i++) {
+        const px = i * stepX;
+        const py = y(data[i]);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 1.25;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      ctx.fillStyle = "#000000";
+      for (let i = 0; i < data.length; i++) {
+        if (data[i] > 20) ctx.fillRect(i * stepX - 1, y(data[i]) - 1, 2.5, 2.5);
+      }
+    } else {
+      ctx.strokeStyle = "rgba(0,0,0,.18)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, y(16.7));
+      ctx.lineTo(w, y(16.7));
+      ctx.stroke();
+    }
+  }
+
+  /* ------------------------------------------------------------------- boot */
+  setPressed();
+  updateStageMeta();
+  syncMotion(false);
+  if (!reducedActive() && !paused) {
+    applyPaused();
+    startMeter();
+  } else {
+    applyPaused();
+    meterState.textContent = reducedActive() ? "still frame" : "paused";
+    if (reducedActive()) resetMeterReadout();
+  }
+  drawGraph([]);
+
+  window.addEventListener("resize", () => {
+    graphDirty = true;
+    drawGraph(recent(240));
+  });
+
+  /* --------------------------------------------------------------- test API */
+  function stats(arr, elapsed) {
+    const sorted = arr.slice().sort((a, b) => a - b);
+    let sum = 0;
+    let worst = 0;
+    let over20 = 0;
+    let over33 = 0;
+    for (const v of arr) {
+      sum += v;
+      if (v > worst) worst = v;
+      if (v > 20) over20++;
+      if (v > 33) over33++;
+    }
+    const avg = arr.length ? sum / arr.length : 0;
+    return {
+      frames: arr.length,
+      duration: Number(elapsed.toFixed(2)),
+      avgFps: Number((avg ? 1000 / avg : 0).toFixed(2)),
+      avgFrame: Number(avg.toFixed(2)),
+      p95: Number(percentile(sorted, 0.95).toFixed(2)),
+      p99: Number(percentile(sorted, 0.99).toFixed(2)),
+      worst: Number(worst.toFixed(2)),
+      over20,
+      over33,
+    };
+  }
+
+  window.__lab = {
+    ready: true,
+    frames: [],
+    states: STATES.map((s) => ({ id: s.id, name: s.name, duration: s.duration, kind: s.kind })),
+    select: (id) => select(id, false),
+    pause: () => setPaused(true),
+    play: () => setPaused(false),
+    isPaused: () => paused,
+    isReduced: () => reducedActive(),
+    freezeAt: (id, t) => {
+      select(id, false);
+      setPaused(true);
+      stageCtl.seek(t);
+      updateStageTime();
+      return stageCtl.getTime();
+    },
+    seam: () => {
+      setPaused(true);
+      stageCtl.seek(STATES[current].duration - 0.001);
+      updateStageTime();
+    },
+    forceAll: () => {
+      buildCards();
+      for (const c of cards) {
+        if (c._io) c._io.disconnect();
+        c.visible = true;
+      }
+      setPaused(false);
+      return cards.length;
+    },
+    scrollToSheet: () => {
+      const sheet = document.getElementById("sheet");
+      window.scrollTo(0, Math.max(0, sheet.offsetTop - 20));
+      return window.scrollY;
+    },
+    viewport: () => ({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      dpr: window.devicePixelRatio,
+      canvases: 1 + cards.length,
+      builtCards: cards.length,
+      visibleCards: cards.filter((c) => {
+        const r = c.canvas.getBoundingClientRect();
+        return r.bottom > 0 && r.top < window.innerHeight;
+      }).length,
+      documentWidth: document.documentElement.scrollWidth,
+    }),
+    stats: () => {
+      const arr = recent(240);
+      return stats(arr, (arr.length * 16.667) / 1000);
+    },
+    measure: (seconds, warmup) =>
+      new Promise((resolve) => {
+        const secs = seconds || 10;
+        const warm = warmup === undefined ? 1 : warmup;
+        if (reducedActive()) enableMotion();
+        if (paused) setPaused(false);
+        const arr = [];
+        let started = false;
+        let t0 = 0;
+        let last = 0;
+        let resetDone = false;
+        function stepMeasure(now) {
+          if (!started) {
+            started = true;
+            t0 = now;
+            last = now;
+            requestAnimationFrame(stepMeasure);
+            return;
+          }
+          const elapsed = (now - t0) / 1000;
+          if (elapsed >= warm && !resetDone) {
+            M.resetRenderStats();
+            resetDone = true;
+          }
+          if (elapsed >= warm) arr.push(now - last);
+          last = now;
+          if (elapsed >= warm + secs) {
+            const draw = M.getRenderStats();
+            const result = stats(arr, elapsed - warm);
+            result.draw = {
+              frames: draw.frames,
+              avg: Number(draw.avg.toFixed(2)),
+              p95: Number(draw.p95.toFixed(2)),
+              max: Number(draw.max.toFixed(2)),
+            };
+            result.viewport = window.__lab.viewport();
+            resolve(result);
+            return;
+          }
+          requestAnimationFrame(stepMeasure);
+        }
+        requestAnimationFrame(stepMeasure);
+      }),
+  };
+})();
+</script>
+</body>
+</html>
