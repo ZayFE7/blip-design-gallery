@@ -6,52 +6,68 @@ Updated: 2026-11-02 (UTC)
 
 - Repository: https://github.com/ZayFE7/blip-design-gallery
 - Working branch: `redesign/calm-chat-v2`
-- Application source location: `redesign/app/`
-- Base: `main` at `ba72bb60ced20cbd744e9ffbd3f2f1095b96c6b1`.
-- The reference gallery and `main` must remain unchanged by this work.
+- Intended tracked application directory: `redesign/app/`
+- Reference-gallery base: `main` at `ba72bb60ced20cbd744e9ffbd3f2f1095b96c6b1`.
+- Preserve `main`, the reference gallery, and the user's uploaded baseline ZIP.
 
-## Current status — C0: recovery and revision checkpoint
+## Current status — C1a: exact original deliverable recovered
 
-This checkpoint saves the project brief and recovery status. **It does not contain the rebuilt application source yet.**
+**The user uploaded the original delivered redesign ZIP to this branch. It is available and verified. Do not restart from scratch.**
 
-The previously delivered `BLIP-Reimagined.zip` was not committed to GitHub. Its temporary download link returned HTTP 404 when recovery was attempted, and the previous local build workspace is no longer available. Do not describe that exact delivered build as recovered unless its actual source is obtained and verified. Any reconstruction from the earlier generated design must be labeled as such.
+- Archive: [`ofsgfj31p3ht.zip`](../ofsgfj31p3ht.zip), at the repository root on this branch.
+- Upload commit: [`4c75772273106d8483f42133634b7937a618db0e`](https://github.com/ZayFE7/blip-design-gallery/commit/4c75772273106d8483f42133634b7937a618db0e).
+- Size: 3,963,028 bytes.
+- SHA-256: `38e0bfbdd3bd2efa4091b78585838b4273e162bc209ea9ebc5538433c47bc268`.
+- This matches the SHA-256 recorded when the original deliverable was created: **byte-for-byte identity confirmed**.
+- ZIP integrity/CRC check passed; all 140 entries were safely extracted.
+- Archive root: `BLIP-Reimagined/`.
+- App source, package/lock files, `OPEN_ME.html`, production build, screenshots, and documentation are intact.
+- Machine-readable provenance: [BASELINE.json](./BASELINE.json).
 
-The original repository currently contains a reference gallery: 31 screenshots, a manifest, a mascot keyframe sheet, and the original 20-state animation lab. Those materials remain available in the repository.
+The earlier temporary download link expired, but that is no longer a blocker. The user's GitHub upload is the first complete application checkpoint. The extracted source has been inspected locally; ordinary extracted source files have not yet been committed under `redesign/app/`.
+
+## Confirmed causes of chat overload in the actual delivered source
+
+- `components/chat/ThreadView.tsx` initializes `railVisible` to `true`, exposing a 300px context panel by default on wide screens.
+- The same component permanently displays a six-option demo-state toolbar above the transcript.
+- `components/chat/EventTimeline.tsx` opens activity automatically for live work and failures, and automatically expands failed-event diagnostics.
+- `components/chat/MessageItem.tsx` puts events before the answer and repeatedly exposes source lists, result badges, artifact cards, approval cards, and text action buttons.
+
+These are findings from the recovered delivered source, not guesses based on screenshots.
 
 ## User feedback and approved direction
 
-- The overall visual design was well received, but the conversation screen is too stacked and visually overwhelming.
-- Make conversation the default focus. Show one compact live status, collapse execution/tool details by default, and expose plan/files/context only on demand.
-- Improve spacing, hierarchy, navigation, and progressive disclosure across the entire application, not only chat.
-- Re-evaluate mascot movements individually. Smoothing semantically confusing animation is not enough.
-- The mascot may evolve creatively, but preserve its simplicity and recognizable personality. Favor a simple silhouette and expressive eyes over unnecessary decoration.
-- Provide coherent states for the agent lifecycle: rest, listening, planning, research, tool work, verification, waiting, approval, clarification, pause, interruption, failure, recovery, completion, and offline operation.
-- Motion should communicate intent, preserve continuity when interrupted, settle naturally, and provide useful reduced-motion/static presentations.
-- Save real source and progress checkpoints to this GitHub branch as work proceeds; do not rely on temporary ZIP links or a particular sandbox remaining alive.
+- Preserve the existing app and the visual direction the user liked. Revise it, do not replace it with an unrelated rebuild.
+- Make conversation the default focus: one compact live status, execution/tool details collapsed by default, plan/files/context on demand.
+- Move demo controls out of the primary reading path. Prefer contextual menus, quieter actions, and meaningful progressive disclosure.
+- Refine spacing, hierarchy, navigation, and density across the whole app.
+- Re-evaluate mascot animation semantics, not only interpolation quality. Creatively refine the character while preserving simplicity and recognizable expressive eyes.
+- Cover rest, listening, planning, research, tool work, verification, queue/wait, approval, clarification, pause, interruption, failure, recovery, partial/full completion, and offline states.
+- Preserve motion continuity during interruptions, settle naturally, and design useful reduced-motion/static presentations. Avoid arbitrary repeated hopping or busy ornament.
+- Save actual working source and progress milestones to this branch as the work proceeds.
 
 ## Milestones
 
-- [x] Inspect current repository and confirm only the original `main` branch exists.
-- [x] Obtain explicit approval to create and commit to `redesign/calm-chat-v2`.
-- [x] C0 — save this brief, recovery status, and resumption instructions.
-- [ ] C1 — recover or reconstruct a runnable baseline and commit actual app source under `redesign/app/`.
-- [ ] C2 — implement calmer, conversation-first chat and inspect all chat states.
-- [ ] C3 — implement coherent mascot styling, state semantics, and continuous motion.
-- [ ] C4 — refine app-wide UX and validate desktop/mobile, dialogs, keyboard behavior, and reduced motion.
-- [ ] C5 — commit final source, setup instructions, verified test results, and a versioned downloadable build.
+- [x] C0 — branch created; project brief, recovery status, and resumption instructions saved.
+- [x] C1a — retrieve the user's uploaded original ZIP from GitHub; verify exact original SHA-256, integrity, and source presence.
+- [ ] C1b — establish the tracked extracted source under `redesign/app/` and freshly verify the baseline setup/build.
+- [ ] C2 — implement calmer conversation-first chat and inspect ready/running/approval/error/offline/empty states.
+- [ ] C3 — improve mascot styling, lifecycle semantics, and continuous motion.
+- [ ] C4 — refine the wider app and verify desktop/mobile, dialogs, keyboard behavior, and reduced motion.
+- [ ] C5 — commit final source, setup instructions, current test results, and a versioned downloadable build.
 
-## Verification status
+## Current verification
 
-Only repository inspection and this documentation checkpoint are verified so far. Historical build/browser results from the unavailable ZIP do not validate future reconstructed or modified source. Run fresh checks before marking a code milestone complete.
+The archive hash, CRC integrity, safe extraction, source presence, and chat source findings are verified. A fresh compile/browser pass on the recovered or revised app has not yet been run in the current workspace. Historical test reports inside the ZIP are baseline records, not proof that future edits pass.
 
 ## Resume checklist
 
-1. Read this file from GitHub and inspect the working branch's current HEAD.
-2. Inspect actual files under `redesign/app/`; do not infer their presence from old conversation claims.
-3. If baseline source is still missing, attempt recovery from the connected design draft or request an uploaded copy. Clearly distinguish recovered material from newly reconstructed code.
-4. Implement the next bounded milestone and commit source plus this progress update together.
-5. Report the resulting commit link and what was actually verified.
+1. Read this file and inspect the current working branch HEAD.
+2. Fetch the existing root `ofsgfj31p3ht.zip` from GitHub, verify the SHA-256 in `BASELINE.json`, and extract `BLIP-Reimagined/` if no checked-out app workspace is present.
+3. Continue from those actual source files. Do not reconstruct from the gallery or ask the user to upload the same ZIP again while it is available here.
+4. Preserve the immutable ZIP; save ordinary source modifications under `redesign/app/` and update this document alongside each bounded milestone.
+5. Run fresh checks and report what was actually changed and verified, with commit links.
 
 ## Boundaries
 
-This is currently a frontend redesign project. Real autonomous execution, account access, OAuth, server-side approval enforcement, and model calls require the actual agent backend. Never present mock execution or demo connections as real integration activity. Do not commit credentials, authentication links, local user data, or `node_modules`.
+The app is a frontend demo. Real autonomous execution, account access, OAuth, server-side approval enforcement, and model calls require the actual agent backend. Never present mock execution or demo connections as real integration activity. Do not commit credentials, authentication links, local user data, or `node_modules`.

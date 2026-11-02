@@ -1,0 +1,18 @@
+{
+  "checkpoint": "C1a-original-deliverable-recovered",
+  "repository": "ZayFE7/blip-design-gallery",
+  "branch": "redesign/calm-chat-v2",
+  "archive_path": "ofsgfj31p3ht.zip",
+  "upload_commit": "4c75772273106d8483f42133634b7937a618db0e",
+  "archive_git_blob_sha": "baf70a6f71a9682d8704c6523506fb48a134834d",
+  "archive_sha256": "38e0bfbdd3bd2efa4091b78585838b4273e162bc209ea9ebc5538433c47bc268",
+  "archive_bytes": 3963028,
+  "archive_entries": 140,
+  "archive_root": "BLIP-Reimagined/",
+  "matches_original_delivered_zip": true,
+  "zip_crc_check_passed": true,
+  "source_and_standalone_preview_present": true,
+  "fresh_build_revalidated": false,
+  "verification_date_utc": "2026-11-02",
+  "instructions": "Use this exact uploaded ZIP as the baseline. Do not reconstruct or restart the application from the original reference gallery. Preserve the archive and commit subsequent source changes under redesign/app/."
+}
