@@ -1,0 +1,6 @@
+import React,{ReactNode} from 'react';
+import type {MascotStateId} from '../../types';
+import {Mascot} from './Mascot';
+interface Props{state:MascotStateId;size?:number;chip?:ReactNode;className?:string;paused?:boolean;speed?:number;reducedMotion?:boolean;replayKey?:number}
+/** The character carries the motion, not permanently orbiting decoration. */
+export function MascotStage({state,size=320,chip,className='',paused,speed,reducedMotion,replayKey}:Props){return <div className={`relative isolate aspect-square w-full overflow-hidden rounded-[28px] border border-line bg-stage ${className}`}><svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full" aria-hidden><circle cx="200" cy="205" r="148" fill="none" stroke="rgb(var(--accent) / .13)" strokeWidth=".8"/><path d="M36 205h18m292 0h18M200 41v17" stroke="rgb(var(--accent) / .22)" strokeWidth="1"/><circle cx="311" cy="107" r="2.4" fill="rgb(var(--accent) / .45)"/></svg><span className="absolute left-6 top-5 font-mono text-[9px] uppercase tracking-[.13em] text-accent-ink/70">Quiet company.</span><div className="absolute inset-0 grid place-items-center"><Mascot state={state} size={size} paused={paused} speed={speed} reducedMotion={reducedMotion} replayKey={replayKey}/></div>{chip&&<div className="absolute bottom-5 left-1/2 max-w-[90%] -translate-x-1/2">{chip}</div>}</div>}
