@@ -1,46 +1,39 @@
 # BLIP v2 — durable progress
 
-Updated: 2026-11-02 UTC
+## Canonical source
 
-## Source of truth
+Branch: `redesign/calm-chat-v2` in https://github.com/ZayFE7/blip-design-gallery. Preserve main, the reference gallery and the user-uploaded root `ofsgfj31p3ht.zip`.
 
-Work only on `redesign/calm-chat-v2` in https://github.com/ZayFE7/blip-design-gallery. Preserve `main`, the original reference gallery and the uploaded baseline ZIP.
+The archive is the exact original delivered app: SHA-256 `38e0bfbdd3bd2efa4091b78585838b4273e162bc209ea9ebc5538433c47bc268`, 140 verified entries. Do not restart from screenshots. `BASELINE.json` records provenance.
 
-The root `ofsgfj31p3ht.zip` is the exact original delivered app, verified against SHA-256 `38e0bfbdd3bd2efa4091b78585838b4273e162bc209ea9ebc5538433c47bc268`. All 140 entries passed integrity checks. See `BASELINE.json`. Do not restart from screenshots or ask the user to upload the same baseline again.
+Tracked changes live under `redesign/app/`. `python3 redesign/prepare.py` verifies and restores the immutable baseline, conditionally retires the old mascot renderer only when its replacement is complete, applies state/phase mappings and tracked overrides, and creates gitignored `redesign/workspace/`. Edit app/, not workspace/.
 
-## Reproducible working source
+## Current verified state
 
-Untouched files remain in the immutable ZIP. Readable v2 source changes are tracked under `redesign/app/`. `python3 redesign/prepare.py` verifies the ZIP and restores the complete source into the disposable, gitignored `redesign/workspace/`, then applies the tracked overrides. This preserves the original checkpoint without duplicating binary outputs or relying on an ephemeral sandbox. Edit app/, not workspace/. Keep code and progress checkpoints together.
+Fresh strict TypeScript and production Vite builds pass. All 11 routes pass fresh Chromium checks at 1440x1000 and 390x844 without runtime exceptions, crash views, horizontal overflow or external requests in the checked route pass.
 
-## Current checkpoint: C2 source draft — validation pending
+The calmer conversation flow is implemented and checked: history is a destination; selected threads have a bounded reading canvas; workspace/context and demo options open on demand; answers precede collapsed tool activity and sources; output links and utility controls are quieter. Draft text and local attachment metadata persist through navigation/reload, and offline follow-ups are honestly queued under a collapsed count.
 
-Committed the first conversation-focused revision:
+The quietly curious mascot is implemented and checked: simple ink-like silhouette, expressive white eyes, 37 intentional lifecycle states, bounded movement, velocity-preserving transitions, patient waiting states, calm failure/recovery, a restrained completion nod, and actual pause/reduced-motion stillness. All 37 states and rapid recovery interruptions render without exceptions.
 
-- Conversation history is a destination rather than a permanently open second sidebar.
-- The selected thread gets a full reading canvas with a bounded, readable transcript.
-- Files and plan open in an explicit workspace sheet; no context rail opens by default.
-- The six demo states moved into Conversation options.
-- Agent answers appear before diagnostics. Tool activity and individual command/output details stay closed, including failures and running states.
-- Source lists are collapsed; generated outputs use compact file links.
-- Read/copy utilities no longer form a repeated toolbar under every reply.
-- New replies do not force a reader away from older messages; a jump-to-new-reply control is available.
-- Conversation cleanup marks linked goals/routines as needing repair and retains Library files.
+A final motion defect was found and fixed: progress arcs used wrapping facial-pose time and jumped at each cycle. A separate monotonic clock now keeps arcs continuous while retaining pause/reduced-motion behavior. An instrumented browser check crossed the cycle boundary and observed no backward angle step.
 
-This is a saved source draft, not a verified release. The new mascot runtime/catalog and its integration are the next checkpoint, followed by fresh compile/browser checks. The preparation script deliberately retires the old renderer files; it must be used after the new runtime overrides are present.
+## Reproducible verification and export
 
-## Personality and remaining work
+- Build: `cd redesign/workspace && npm ci && npm run build`.
+- Browser checks: install Python Playwright/Chromium, then `python3 redesign/smoke.py`.
+- Export: `python3 redesign/package.py --revision YOUR_COMMIT_SHA`.
+- The exporter builds the app and creates complete source plus an offline `OPEN_ME.html` in `redesign/deliverables/BLIP-Quietly-Curious-v2.zip`.
 
-Personality: **quietly curious** — warm, observant and capable, never a noisy dashboard. Preserve a simple ink-like silhouette and expressive white eyes. Re-author confusing motions rather than smoothing them unchanged. Working, waiting, approval, clarification, interruption, failure, recovery and completion need coherent behavior.
+This commit saves the verified motion source and reusable scripts. The scripts themselves and final package still require a clean read-back execution before the export milestone is marked complete. Older interrupted-draft wording in historical repair notes is superseded by this file and current `app/docs/QA_REPORT.md`.
 
-- [x] C0: durable project instructions and branch.
-- [x] C1a: retrieve and verify the exact original ZIP.
-- [x] Save reproducible preparation workflow and tracked chat source overrides.
-- [ ] C1b: freshly install, compile and run the assembled revision.
-- [ ] C2: validate all calm-chat states and queued/blocked/error flows.
-- [ ] C3: commit a coherent new mascot renderer, state catalog, and motion studio.
-- [ ] C4: app-wide refinement and desktop/mobile/keyboard/reduced-motion checks.
-- [ ] C5: verified source checkpoint and rebuilt downloadable ZIP/standalone preview.
+## Milestones
 
-## Resume
+- [x] Durable branch, recovery metadata and exact original app checkpoint.
+- [x] Safe reproducible assembly, strict typecheck and production build.
+- [x] Calmer chat and fresh draft/queue/on-demand-panel checks.
+- [x] New 37-state character, interruptions, exact pause and reduced motion checks.
+- [x] Fresh 22-route/viewport pass and continuous progress-arc regression check.
+- [ ] Read back and execute the committed smoke/export scripts, verify the standalone artifact, and deliver the new ZIP.
 
-Read this file and the current branch HEAD. Use the checked-in archive plus tracked app overrides, not a new reconstruction. Complete the new mascot integration before preparing the current draft. Run fresh tests; historical v1 QA reports are not proof of v2 correctness. Record actual results, known issues and commit links. Do not commit credentials, real account data, local uploads or node_modules. Mock activity must stay visibly identified as simulated.
+Only targeted Chromium smoke coverage is claimed, not exhaustive regression/security/accessibility certification. Real agent/backend integration remains out of scope for this local demo. Do not commit credentials, local user data, authentication links or node_modules. Main and the original gallery remain unchanged.
