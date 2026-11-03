@@ -1,0 +1,24 @@
+{
+  "ui_source_commit": "41aa98731a371902e4174decf23875e3cf2bfa89",
+  "format": "Self-contained interactive HTML; download and open in a current browser",
+  "previews": {
+    "BLIP-App-Preview.html": {
+      "bytes": 835261,
+      "sha256": "e770af384e84159bdc0fc01e58ef420c946d1be2fbc0d4c71e8e220ff2a97d9e",
+      "scope": "Complete enhanced frontend with all 11 screens and calmer conversation flows"
+    },
+    "BLIP-Mascot-Animated-States.html": {
+      "bytes": 835794,
+      "sha256": "e1eefa15c67fa05cad38308beaa9d58293253cdff1e135dd9d102f2698faa6b2",
+      "scope": "Separate full-width animated mascot studio with all 37 state controls, replay, pause, speed, sequences and reduced motion"
+    }
+  },
+  "checks": {
+    "fresh_typecheck_and_production_build": "passed",
+    "committed_smoke_script": "passed; 22 responsive checks and 8 interaction checks; no runtime exceptions",
+    "app_file_preview": "opened via file:// and completed a simulated task while activity stayed collapsed",
+    "mascot_file_preview": "opened via file://; all 37 controls present; changing canvas output confirmed animation; 390px layout checked",
+    "external_network_requests_during_file_checks": 0
+  },
+  "notes": "Previews use the same saved app and renderer, not a separate look-alike implementation. Real integrations and agent execution remain simulated. Export links may expire; the checked-in baseline, source overrides and exporter scripts are the durable source."
+}

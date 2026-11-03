@@ -1,39 +1,65 @@
-# BLIP v2 — durable progress
+# BLIP v2 — verified previews and durable progress
 
 ## Canonical source
 
-Branch: `redesign/calm-chat-v2` in https://github.com/ZayFE7/blip-design-gallery. Preserve main, the reference gallery and the user-uploaded root `ofsgfj31p3ht.zip`.
+Use `redesign/calm-chat-v2` in https://github.com/ZayFE7/blip-design-gallery. Main, the original gallery and the user's root `ofsgfj31p3ht.zip` remain untouched.
 
-The archive is the exact original delivered app: SHA-256 `38e0bfbdd3bd2efa4091b78585838b4273e162bc209ea9ebc5538433c47bc268`, 140 verified entries. Do not restart from screenshots. `BASELINE.json` records provenance.
+The ZIP is the exact first app checkpoint: SHA-256 `38e0bfbdd3bd2efa4091b78585838b4273e162bc209ea9ebc5538433c47bc268`, 140 verified entries. Do not restart from screenshots. Tracked changes are under `redesign/app/`; `prepare.py` verifies and restores the baseline plus these overrides into disposable, gitignored `redesign/workspace/`.
 
-Tracked changes live under `redesign/app/`. `python3 redesign/prepare.py` verifies and restores the immutable baseline, conditionally retires the old mascot renderer only when its replacement is complete, applies state/phase mappings and tracked overrides, and creates gitignored `redesign/workspace/`. Edit app/, not workspace/.
+## Current completed revision
 
-## Current verified state
+The app preserves the user's original redesign, while making selected conversations a focused reading canvas. History is a destination; workspace and demo controls are on demand; activity, sources and command output stay closed until requested. Draft text and local attachment metadata persist through navigation/reload, and offline follow-ups are honestly queued in a compact collapsed queue.
 
-Fresh strict TypeScript and production Vite builds pass. All 11 routes pass fresh Chromium checks at 1440x1000 and 390x844 without runtime exceptions, crash views, horizontal overflow or external requests in the checked route pass.
+The mascot is re-authored with a quietly curious personality, ink-like finish, expressive eyes, 37 coherent lifecycle states, bounded motion, velocity-preserving springs, patient holds, calm failures and recovery, a restrained completion nod, exact pause and meaningful reduced-motion stills. A separate monotonic clock prevents progress arcs jumping at pose-loop boundaries.
 
-The calmer conversation flow is implemented and checked: history is a destination; selected threads have a bounded reading canvas; workspace/context and demo options open on demand; answers precede collapsed tool activity and sources; output links and utility controls are quieter. Draft text and local attachment metadata persist through navigation/reload, and offline follow-ups are honestly queued under a collapsed count.
+Core UI/renderer source revision: `41aa98731a371902e4174decf23875e3cf2bfa89`.
 
-The quietly curious mascot is implemented and checked: simple ink-like silhouette, expressive white eyes, 37 intentional lifecycle states, bounded movement, velocity-preserving transitions, patient waiting states, calm failure/recovery, a restrained completion nod, and actual pause/reduced-motion stillness. All 37 states and rapid recovery interruptions render without exceptions.
+## Fresh verification — 2026-11-03 UTC
 
-A final motion defect was found and fixed: progress arcs used wrapping facial-pose time and jumped at each cycle. A separate monotonic clock now keeps arcs continuous while retaining pause/reduced-motion behavior. An instrumented browser check crossed the cycle boundary and observed no backward angle step.
+The committed renderer was read back and matched the locally tested source hash. The committed packaging and smoke scripts were read back and actually executed.
 
-## Reproducible verification and export
+- Strict TypeScript and production Vite build: passed.
+- Committed smoke script: passed all 22 screen/viewport checks and 8 targeted interaction checks, with no runtime exceptions or external requests during the checked route pass.
+- Full app HTML opened directly through file://, ran a simulated task, and retained the calm collapsed activity layout.
+- Separate mascot HTML opened directly through file://, showed all 37 controls, had visibly changing canvas output, hid unrelated app navigation, and fit a 390px viewport.
+- Both file previews made no external network requests in those checks.
 
-- Build: `cd redesign/workspace && npm ci && npm run build`.
-- Browser checks: install Python Playwright/Chromium, then `python3 redesign/smoke.py`.
-- Export: `python3 redesign/package.py --revision YOUR_COMMIT_SHA`.
-- The exporter builds the app and creates complete source plus an offline `OPEN_ME.html` in `redesign/deliverables/BLIP-Quietly-Curious-v2.zip`.
+These are targeted Chromium smoke checks, not exhaustive security, accessibility or cross-browser certification.
 
-This commit saves the verified motion source and reusable scripts. The scripts themselves and final package still require a clean read-back execution before the export milestone is marked complete. Older interrupted-draft wording in historical repair notes is superseded by this file and current `app/docs/QA_REPORT.md`.
+## Separate previews
+
+`export_previews.py` creates:
+
+1. `deliverables/BLIP-App-Preview.html` — complete enhanced frontend.
+2. `deliverables/BLIP-Mascot-Animated-States.html` — separate animated mascot studio, using the exact same renderer and controls.
+
+It also includes `MASCOT_PREVIEW.html` in the complete source/build ZIP. File checksums and provenance are in `PREVIEW_MANIFEST.json`. These files need only a current browser, not npm or a server. System reduced-motion preferences remain respected.
+
+## Reproduce from GitHub
+
+```sh
+python3 redesign/prepare.py
+cd redesign/workspace
+npm ci
+npm run build
+cd ../..
+pip install playwright
+playwright install chromium
+python3 redesign/smoke.py
+python3 redesign/package.py --revision YOUR_COMMIT_SHA
+python3 redesign/export_previews.py
+```
+
+The default packager builds again to avoid exporting stale source. Edit tracked files in app/, not workspace/. Use prepare.py --refresh after committing changes. Export links are temporary conveniences; the immutable baseline, readable overrides and reproducible scripts in GitHub are the durable source.
 
 ## Milestones
 
-- [x] Durable branch, recovery metadata and exact original app checkpoint.
+- [x] Durable branch and exact original app baseline recovered and verified.
 - [x] Safe reproducible assembly, strict typecheck and production build.
-- [x] Calmer chat and fresh draft/queue/on-demand-panel checks.
-- [x] New 37-state character, interruptions, exact pause and reduced motion checks.
-- [x] Fresh 22-route/viewport pass and continuous progress-arc regression check.
-- [ ] Read back and execute the committed smoke/export scripts, verify the standalone artifact, and deliver the new ZIP.
+- [x] Calmer chat, persistent drafts, queues and on-demand panels implemented and checked.
+- [x] New 37-state character, interruptions, pause/reduced motion and continuous arcs implemented and checked.
+- [x] Fresh committed regression script executed successfully.
+- [x] Full app and separate animated mascot HTML previews exported and tested.
+- [x] Complete source/build ZIP exported with standalone previews and QA results.
 
-Only targeted Chromium smoke coverage is claimed, not exhaustive regression/security/accessibility certification. Real agent/backend integration remains out of scope for this local demo. Do not commit credentials, local user data, authentication links or node_modules. Main and the original gallery remain unchanged.
+Real agent execution, accounts, OAuth and schedules remain explicitly simulated. Do not commit credentials, real account data, authentication links, local user uploads or node_modules. Save subsequent work and progress updates on this same branch.

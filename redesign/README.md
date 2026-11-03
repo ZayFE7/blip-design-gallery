@@ -1,17 +1,28 @@
-# BLIP — calmer chat and coherent mascot revision
+# BLIP v2 — quietly curious
 
-## First complete app checkpoint: recovered
+The enhanced app continues from the exact original delivered ZIP the user uploaded. It is not a restart. Main and the reference gallery remain unchanged.
 
-The user uploaded the original delivered redesign as [`ofsgfj31p3ht.zip`](../ofsgfj31p3ht.zip) on this branch. Its SHA-256 matches the original deliverable byte for byte. It contains the app source, lockfile, ready-built app, standalone `OPEN_ME.html`, screenshots and documentation.
+## Two interactive previews
 
-**Continue from that ZIP. Do not restart the app from the reference gallery.** Preserve the ZIP as the immutable baseline and save subsequent source changes under `redesign/app/`.
+- **BLIP-App-Preview.html** — all 11 screens, calmer chat, persistent drafts and on-demand workspace/activity.
+- **BLIP-Mascot-Animated-States.html** — separate animated studio with 37 states, replay, pause, speed and work/recovery sequences.
 
-- [Verified baseline metadata](./BASELINE.json)
-- [Current progress and next steps](./PROGRESS.md)
-- [Resumption guidance](./AGENTS.md)
+Download each generated HTML file and open it in a current browser. Fonts and code are inlined; no install or server is needed. These are interactive files, not screenshots. Reduced-motion settings are respected.
 
-To inspect the baseline, download and extract the ZIP and open `BLIP-Reimagined/OPEN_ME.html`. For development, use the included README and package/lock files.
+## Generate them from this branch
 
-Next revision: calmer conversation-first chat, quieter app-wide UX, and simple expressive mascot styling with coherent continuous lifecycle animation.
+```sh
+python3 redesign/prepare.py
+cd redesign/workspace
+npm ci
+npm run build
+cd ../..
+python3 redesign/package.py --revision YOUR_COMMIT_SHA
+python3 redesign/export_previews.py
+```
 
-`main` and the original reference gallery remain unchanged.
+Outputs are under `redesign/deliverables/`, including the full assembled source/build ZIP. Read [PROGRESS.md](./PROGRESS.md) for verified checks, [PREVIEW_MANIFEST.json](./PREVIEW_MANIFEST.json) for preview hashes and provenance, and [AGENTS.md](./AGENTS.md) before making changes.
+
+Original source remains in the immutable root `ofsgfj31p3ht.zip`; readable v2 overrides live in `redesign/app/`. Edit tracked app files, then regenerate the disposable workspace using prepare.py --refresh. No progress depends on an old sandbox or temporary download link.
+
+Agent execution and connected accounts are local demo simulations; no real email, tool command or OAuth flow is run.
